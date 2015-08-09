@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>DeepDreamAnim UI</title>
+    <meta charset="utf-8">
+    <meta content="initial-scale=1, minimum-scale=1, width=device-width" name="viewport">
+
+    <script src="static/js/jquery-2.1.4.min.js"></script>
+    <script src="static/js/jquery-ui.min.js"></script>
+    <script src="static/js/buzz.min.js"></script>
+    <script src='static/js/nprogress.js'></script>
+    <script src="static/js/bootstrap.min.js"></script>
+
+    <link rel="stylesheet" href="static/css/bootstrap.min.css">
+    <link rel="stylesheet" href="static/css/bootstrap-theme.min.css">
+    <link rel="stylesheet" href="static/css/themes/bootstrap.css"/> 
+    <link rel='stylesheet' href='static/css/nprogress.css'/>
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css"/>
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.10.4/themes/smoothness/jquery-ui.css" />
+
+    <link rel="stylesheet" href="static/css/main.css"> 
+    <link href='//fonts.googleapis.com/css?family=Open+Sans:400,300,600,700,800' rel='stylesheet' type='text/css'>
+
+    <link href="data:image/x-icon;base64,AAABAAEAEBAQAAEABAAoAQAAFgAAACgAAAAQAAAAIAAAAAEABAAAAAAAgAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAJ6TrAFy+8QCC0vgA7+/vAC6n7ACE0/gAS2RuAKbU5QDAwMAAv+3+ACek6gApoeYAAAAAAAAAAAAAAAAARERERERERABEREREREREAEREREREREQAREREeIRERABJmZSohUREAERERKolVEQAREREozUVRABJmZRDNlFUAEREREQzZRUAREREREM2W1BJmZmZRDNlxUREREREQzZVREREREREMzVJmZmZmURDM0REREREREQzRERERERERAMAAwAAAAMAAAADAAAAAwAAAAMAAAADAAAAAwAAAAMAAAADAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgAA" rel="icon" type="image/x-icon" />
+  </head>
+
+
+  <script>
+
+    var params_view = { 
+      params: {
+        presets: ["coolpreset", "hotpreset"],
+        network: ["googlelenet", "placesnet"],
+        layers: "inception_3b/output",
+        octaves: 4,
+        octavescale: 1.4,
+        itterations: 10,
+        jitter: 32,
+        stepsize: 1.5,
+        blend: 0.5,
+        opticalflow: 1,
+        guide: "",
+        gpu: 1,
+
+        author:"authorname",
+        date:"12/12/2016"
+      }
+    };
+
+    function checkURL(url) { return(url.match(/\.(jpeg|jpg|gif|png)$/) != null); }
+
+    function get_directory(id,type) {        
+      $.ajax({
+        type: "POST",
+        contentType: "application/json; charset=utf-8",
+        url: "/api/v1.0/getdirectory",
+        data: JSON.stringify({id:id, type:type}),
+        success: function (data) {
+          console.log(data);
+          var finalreturn = '';
+          for(var i=0; i<data.dirs.length;i++){
+            finalreturn+='<img title="'+data.dirs[i]+'" class="input_img" src="https://i.imgur.com/rWPZxk8.jpg" />';
+          }
+          for(var i=0; i<data.files.length;i++){
+            if(checkURL(data.files[i])){
+              finalreturn+='<img title="'+data.files[i]+'" class="input_img" src="'+ data.root + data.files[i] +'" />';
+            }
+          }
+          if(type === "input"){ 
+            $("#container_input").html(finalreturn);
+            $("#input_amount").html(data.files.length + " Images");
+          }
+          if(type === "output"){ 
+            $("#container_output").html(finalreturn);
+            $("#output_amount").html(data.files.length + " Images");
+          }
+        },
+        dataType: "json"
+      });
+    }
+
+    function get_console(id) {
+      var timestamp = new Date().getTime();
+      jQuery.get('static/render.log?t='+ timestamp, function(data) {
+        $("#output_console").val(data); 
+      });
+    }
+
+    function get_render() {        
+      $.ajax({
+        type: "POST",
+        contentType: "application/json; charset=utf-8",
+        url: "/api/v1.0/getrender",
+        data: JSON.stringify(params_view.params),
+        success: function (data) {
+          console.log(data);
+        },
+        dataType: "json"
+      });
+    }
+
+    function setupForm(){      
+      // presets
+      $("#params_presets").empty();
+      for(var i = 0; i < params_view.params.presets.length; i++) {
+        $("#params_presets").append('<option value="'+params_view.params.presets[i]+'">'+params_view.params.presets[i]+'</option>')
+      }
+
+      // network
+      $("#params_network").empty();
+      for(var i = 0; i < params_view.params.network.length; i++) {
+        $("#params_network").append('<option value="'+params_view.params.network[i]+'">'+params_view.params.network[i]+'</option>')
+      }
+
+      // layers
+      $("#params_layers").val(params_view.params.layers);
+      
+      // octaves
+      $("#params_octaves").empty();
+      for(var i = 1; i <= 5; i++) {
+        var selected = ''
+        if(i === params_view.params.octaves){selected = 'selected'}
+        $("#params_octaves").append('<option '+selected+' value="'+i+'">'+i+'</option>')
+      }
+
+      // octave scale
+      $("#params_octavescale").empty();
+      var octavescalecounter = 0;
+      for(var i = 1; i <= 100; i++) {
+        var selected = ''
+        if(i === (params_view.params.octavescale*10) ){selected = 'selected'}
+        $("#params_octavescale").append('<option '+selected+' value="'+i/10+'">'+i/10+'</option>');
+      }
+
+      // itterations
+      $("#params_iterations").empty();
+      for(var i = 1; i <= 200; i++) {
+        var selected = ''
+        if(i === params_view.params.itterations){selected = 'selected'}
+        $("#params_iterations").append('<option '+selected+' value="'+i+'">'+i+'</option>')
+      }
+
+      // jitter
+      $("#params_jitter").empty();
+      for(var i = 1; i <= 100; i++) {
+        var selected = ''
+        if(i === params_view.params.jitter){selected = 'selected'}
+        $("#params_jitter").append('<option '+selected+' value="'+i+'">'+i+'</option>');
+      }
+
+      // stepsize
+      $("#params_stepsize").empty();
+      for(var i = 1; i <= 100; i++) {
+        var selected = ''
+        if(i === (params_view.params.stepsize*10) ){selected = 'selected'}
+        $("#params_stepsize").append('<option '+selected+' value="'+i/10+'">'+i/10+'</option>');
+      }
+
+      // blend
+      $("#params_blend").empty();
+      for(var i = 1; i <= 10; i++) {
+        var selected = ''
+        if(i === (params_view.params.blend*10) ){selected = 'selected'}
+        $("#params_blend").append('<option '+selected+' value="'+i/10+'">'+i/10+'</option>');
+      }
+
+      // optical flow
+      $("#params_opticalflow").empty();
+      for(var i = 0; i <= 1; i++) {
+        var selected = ''
+        if(i === params_view.params.opticalflow ){selected = 'selected'}
+        $("#params_opticalflow").append('<option '+selected+' value="'+i+'">'+i+'</option>');
+      }
+
+      // guide
+      $("#params_guide").val(params_view.params.guide);
+      
+      // gpu
+      $("#params_gpu").empty();
+      for(var i = 0; i <= 1; i++) {
+        var selected = ''
+        if(i === params_view.params.gpu ){selected = 'selected'}
+        $("#params_gpu").append('<option '+selected+' value="'+i+'">'+i+'</option>');
+      }
+    }
+
+    function mainloop(){
+      get_directory("foldername","input");
+      get_directory("foldername","output");
+      get_console("idtag");
+    }
+
+    $(function() {
+      setupForm();
+      mainloop();
+      setInterval(function(){ mainloop(); },4000);
+
+      $("#form_main").submit(function( event ) {
+        event.preventDefault();
+        get_render();
+      });
+    });
+  </script>
+
+  <body>
+  
+    <div id="container_site">
+      
+        <h1>DeepDreamAnim UI</h1>
+        <hr style="background-color:lightgray;"/>
+
+        <form action="render" method="post" id="form_main">
+
+          <div class="row">
+            
+            <div class="col-xs-4">
+              <h2>Inputs<span style="margin-left:10px; font-size:15px; color:gray;" id="input_amount">1220 Images</span></h2>
+              
+              <div style="height:565px; width:100%; overflow:hidden; overflow-y:scroll;" id="container_input">
+                <div class="input_img" style="background-image:url(https://i.imgur.com/yjlwXsy.jpg)"></div>
+              </div>
+              <br/>
+              <input type="submit" name="submit" method="post" value="Make Movie">
+              <input type="submit" name="submit" method="post" value="Upload">
+              <input type="submit" name="submit" method="post" value="Delete">
+            </div>
+
+
+            <div class="col-xs-4" >
+              <h2>Parameters</h2>
+
+              <div class="form-group has-success has-feedback">
+                
+                <label class="control-label col-sm-3" for="inputSuccess3">Presets</label>
+                <div class="col-sm-9">
+                  <select class="form-control" id="params_presets">
+                    <option>Standard Params</option>
+                    <option selected>3b outputs sharp</option>
+                    <option>inception_4c/output</option>
+                  </select>
+                </div>
+
+                <label class="control-label col-sm-3" for="inputSuccess3">Network</label>
+                <div class="col-sm-9">
+                  <select class="form-control" id="params_network"></select>
+                </div>
+              
+                <label class="control-label col-sm-3" for="inputSuccess3">Layers</label>
+                <div class="col-sm-9">
+                  <input type="text" class="form-control" value="inception_4a/output" id="params_layers"/>
+                </div>
+
+                <label class="control-label col-sm-3" for="inputSuccess3">Octaves</label>
+                <div class="col-sm-9">
+                  <select class="form-control" id="params_octaves"></select>
+                </div>
+                <label class="control-label col-sm-3" for="inputSuccess3">Octavescale</label>
+                <div class="col-sm-9">
+                  <select class="form-control" id="params_octavescale"></select>
+                </div>
+                <label class="control-label col-sm-3" for="inputSuccess3">Iterations</label>
+                <div class="col-sm-9">
+                  <select class="form-control" id="params_iterations"></select>
+                </div>
+
+                <label class="control-label col-sm-3" for="inputSuccess3">Jitter</label>
+                <div class="col-sm-9">
+                  <select class="form-control" id="params_jitter"></select>
+                </div>
+
+                <label class="control-label col-sm-3" for="inputSuccess3">Stepsize</label>
+                <div class="col-sm-9">
+                  <select class="form-control" id="params_stepsize"></select>
+                </div>
+
+                <label class="control-label col-sm-3" for="inputSuccess3">Blend</label>
+                <div class="col-sm-9">
+                  <select class="form-control" id="params_blend"></select>
+                </div>
+
+                <label class="control-label col-sm-3" for="inputSuccess3">Opticalflow</label>
+                <div class="col-sm-9">
+                  <select class="form-control" id="params_opticalflow"></select>
+                </div>
+
+                <label class="control-label col-sm-3" for="inputSuccess3">Guide</label>
+                <div class="col-sm-9">
+                  <input type="text" class="form-control" value="" placeholder="url" id="params_guide" />
+                </div>
+
+
+                <label class="control-label col-sm-3" for="inputSuccess3">GPU</label>
+                <div class="col-sm-9">
+                  <select class="form-control" id="params_gpu"></select>
+                </div>
+
+                <label class="control-label col-sm-3" for="inputSuccess3">Render</label>
+                <div class="col-sm-9">
+                  <input type="submit" name="submit" method="post" value="Render Final">
+                  <input type="submit" name="submit" method="post" value="Render Preview">
+                  <input type="submit" name="submit" method="post" value="Cancel">
+                </div>
+
+              </div>
+            </div>
+
+            <div class="col-xs-4">
+              <h2>Outputs<span style="margin-left:10px; font-size:15px; color:gray;" id="output_amount">23 Images</span></h2>
+              <div style="height:565px; width:100%; overflow:hidden; overflow-y:scroll;" id="container_output">
+                <div class="input_img" style="background-image:url(http://venturebeat.com/wp-content/uploads/2015/07/deepdream-2.jpeg)"></div>
+              </div>
+              <br/>
+              <input type="submit" name="submit" method="post" value="Make Movie">
+              <input type="submit" name="submit" method="post" value="Download">
+              <input type="submit" name="submit" method="post" value="Delete">
+            </div>
+
+
+          </div>
+            <br/>
+            <h2>Console</h2>
+            <h4>Clear Console</h4>
+            <textarea class="form-control" id="output_console" rows="20">{{text_input}}</textarea> 
+            <br/><br/> 
+        </form>
+
+     
+    </div>
+  </body>
+</html>
