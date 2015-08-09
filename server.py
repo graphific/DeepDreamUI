@@ -15,6 +15,7 @@ import io
 import time
 from os import listdir
 from os.path import isfile, join
+from os import path
 
 reload(sys)
 sys.setdefaultencoding("utf-8")
@@ -66,23 +67,27 @@ def api_input():
     if not request.json or not 'id' in request.json or not 'type' in request.json:
         abort(400)
 
-    input_directory = request.json['id']
+    root = request.json['id']
     input_type = request.json['type']
-
-    rootdir = ''
-    if input_type == 'input':
-        rootdir = 'static/input/'
-    if input_type == 'output':
-        rootdir = 'static/output/'
 
     foundfile = []
     founddirs = []
 
-    for root, dirs, files in os.walk(rootdir):
-        foundfile += files
-        founddirs += dirs
+    # found files
+    for path, subdirs, files in os.walk(root):
+        for name in files:
+            found = os.path.join(path, name)
+            foundfile.append(found)
+        break
 
-    return jsonify({'root': rootdir, 'files': foundfile, 'dirs': founddirs}), 201
+    # found sub-directories
+    for path, subdirs, files in os.walk(root):
+        for name in subdirs:
+            found = os.path.join(path, name)
+            founddirs.append(found)
+        break
+
+    return jsonify({'root': root, 'files': foundfile, 'dirs': founddirs}), 201
     
 
 if __name__ == '__main__':

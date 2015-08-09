@@ -43,3 +43,42 @@ hr{
 .form-control{
   margin-bottom: 15px;
 }
+.clickable{
+  cursor: pointer;
+  color:#23527C;
+}
+.clickable:hover{
+  color:#417bad;
+}
+.imgcount{
+  font-size: 14px;
+  color: lightgray;
+  margin-left: 10px;
+  display: inline-block;
+  margin-top:5px;
+  float: right;
+  font-weight: 600;
+}
+.control-label{
+  color: gray!important;
+}
+.data_img{
+  cursor: pointer;
+  display: inline-block;
+  position: relative;
+}
+.data_img:hover{
+  background-color: yellow;
+}
+.data_img_text{
+  position: absolute;
+  margin-top: -34px;
+  padding: 2px;
+  padding-top: 0px;
+  padding-bottom: 0px;
+  margin-left:10px;
+  z-index: 1000;
+  font-size: 11px;
+  background-color: rgba(255,255,255,0.5);
+  cursor: pointer;
+}
