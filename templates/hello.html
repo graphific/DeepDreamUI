@@ -55,6 +55,9 @@
 
       // check if file is image
       function checkURL(url) { return(url.match(/\.(jpeg|jpg|gif|png)$/) != null); }
+      
+      // capitalize First Letter
+      function capitalizeFirstLetter(string) { return string.charAt(0).toUpperCase() + string.slice(1);}
 
       // directory click handler
       function directoryClickHandler(obj,dir,type,container){
@@ -94,16 +97,16 @@
             if(type === "output"){ directoryClickHandler(dir,data.dirs[i],"output","container_output"); }
           }
 
+          var foundimgcount = 0;
           // append images
           for(var i=0; i<data.files.length;i++){
             if(checkURL(data.files[i])){
+              foundimgcount++;
               var finalreturn ='<img title="'+data.files[i]+'" class="input_img" src="'+ data.files[i] +'" />';
               if(type === "input"){ $("#container_input").append(finalreturn); }
               if(type === "output"){ $("#container_output").append(finalreturn); }
             }
           }
-
-          function capitalizeFirstLetter(string) { return string.charAt(0).toUpperCase() + string.slice(1);}
 
           // directory path display tool
           function directoryDisplay(container, amount, dirdisplay,type){
@@ -113,7 +116,10 @@
             if(splitdir[0].length <= 0){splitdir.pop();}
 
             // append root directory
-            $("#"+dirdisplay).html('<span><a href="">'+capitalizeFirstLetter(type)+'</a></span>');
+            //$("#"+dirdisplay).html('<span><a href="">'+capitalizeFirstLetter(type)+'</a></span>');
+            var dir = '<span class="clickable">'+capitalizeFirstLetter(type)+'</span>'
+            var finaldir = 'static/'+type+'/';
+            directoryClickHandler(dir,finaldir,type,dirdisplay);
 
             // append sub-directories
             for(var i=0;i<splitdir.length;i++){
@@ -131,7 +137,7 @@
             }
 
             // append image count
-            $("#"+dirdisplay).append('<span class="imgcount">'+data.files.length+' img</span>');
+            $("#"+dirdisplay).append('<span class="imgcount">'+foundimgcount+' img</span>');
           }
 
           // display directories & path info
