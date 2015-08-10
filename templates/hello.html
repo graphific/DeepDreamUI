@@ -83,9 +83,20 @@
       }
 
       // directory click handler
-      function directoryClickHandler(obj,dir,type,container){
-        if(type === "input"){ $(obj).click(function(){ get_directory(dir,type); }).appendTo("#"+container);}
-        if(type === "output"){ $(obj).click(function(){ get_directory(dir,type); }).appendTo("#"+container);}      
+      function directoryClickHandler(obj,dir,type,container,doublclick){
+        if(doublclick){
+          if(type === "input"){ 
+            $(obj).click(function(){ imageselector($(this),dir); }).dblclick(function(){ get_directory(dir,type); }).appendTo("#"+container);
+
+          }
+          if(type === "output"){ 
+            $(obj).click(function(){ imageselector($(this),dir); }).dblclick(function(){ get_directory(dir,type); }).appendTo("#"+container);
+          }   
+        }
+        else{
+          if(type === "input"){ $(obj).click(function(){ get_directory(dir,type); }).appendTo("#"+container);}
+          if(type === "output"){ $(obj).click(function(){ get_directory(dir,type); }).appendTo("#"+container);}   
+        }   
       }
 
       function imageClickHandler(obj,type,container,file){
@@ -123,8 +134,8 @@
           // append directories
           for(var i=0; i<data.dirs.length;i++){
             dir ='<div class="input_img_container data_img"><img title="'+data.dirs[i]+'" class="input_img" src="https://i.imgur.com/PRNWsQl.png" /><div class="data_img_text">'+directoryTextDisplay(data.dirs[i])+'</div></div>';
-            if(type === "input"){ directoryClickHandler(dir,data.dirs[i],"input","container_input"); }
-            if(type === "output"){ directoryClickHandler(dir,data.dirs[i],"output","container_output"); }
+            if(type === "input"){ directoryClickHandler(dir,data.dirs[i],"input","container_input",true); }
+            if(type === "output"){ directoryClickHandler(dir,data.dirs[i],"output","container_output",true); }
           }
 
           var foundimgcount = 0;
@@ -149,7 +160,7 @@
             //$("#"+dirdisplay).html('<span><a href="">'+capitalizeFirstLetter(type)+'</a></span>');
             var dir = '<span class="clickable">'+capitalizeFirstLetter(type)+'</span>'
             var finaldir = 'static/'+type+'/';
-            directoryClickHandler(dir,finaldir,type,dirdisplay);
+            directoryClickHandler(dir,finaldir,type,dirdisplay,false);
 
             // append sub-directories
             for(var i=0;i<splitdir.length;i++){
@@ -163,7 +174,7 @@
               }
 
               // hook up to clickhandler
-              directoryClickHandler(dir,finaldir,type,dirdisplay);
+              directoryClickHandler(dir,finaldir,type,dirdisplay,false);
             }
 
             // append image count
@@ -385,6 +396,7 @@
         <ul class="nav nav-tabs">
           <li class="active"><a href="#"><strong>DeepDream UI</strong></a></li>
           <li><a href="#">Jobs</a></li>
+          <li><a href="#">Console</a></li>
           <li><a href="#">Settings</a></li>
         </ul>
         <br/>
@@ -419,7 +431,7 @@
             <button type="button" class="btn btn-default btn-sm" id="input_makemovie">
               <span class="glyphicon glyphicon-facetime-video" aria-hidden="true"></span> Make Movie
             </button>
-            
+
           </div>
 
 

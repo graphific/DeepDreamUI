@@ -29,9 +29,7 @@ hr{
   display: inline-block;
   position: relative;
 }
-.data_img:hover{
-  background-color: yellow;
-}
+
 .data_img_text{
   position: absolute;
   margin-top: -34px;
