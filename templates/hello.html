@@ -381,9 +381,13 @@
   <body>
   
     <div id="container_site">
-      
-        <h1>DeepDreamAnim UI</h1>
-        <hr style="background-color:lightgray;"/>
+        <br/>
+        <ul class="nav nav-tabs">
+          <li class="active"><a href="#"><strong>DeepDream UI</strong></a></li>
+          <li><a href="#">Jobs</a></li>
+          <li><a href="#">Settings</a></li>
+        </ul>
+        <br/>
 
         <div class="row">
           
@@ -395,14 +399,10 @@
             </h3>
             <br/>
             
-            <div style="height:565px; width:100%; overflow:hidden; overflow-y:scroll;" id="container_input">
+            <div style="height:520px; width:100%; overflow:hidden; overflow-y:scroll;" id="container_input">
               <div class="input_img" style="background-image:url(https://i.imgur.com/yjlwXsy.jpg)"></div>
             </div>
             <br/>
-
-            <button type="button" class="btn btn-default btn-sm" id="input_makemovie">
-              <span class="glyphicon glyphicon-facetime-video" aria-hidden="true"></span> Make Movie
-            </button>
 
             <button type="button" class="btn btn-default btn-sm" id="input_upload">
               <span class="glyphicon glyphicon-upload" aria-hidden="true"></span> Upload
@@ -416,6 +416,10 @@
               <span class="glyphicon glyphicon-folder-open" aria-hidden="true"></span> Make Folder
             </button>
 
+            <button type="button" class="btn btn-default btn-sm" id="input_makemovie">
+              <span class="glyphicon glyphicon-facetime-video" aria-hidden="true"></span> Make Movie
+            </button>
+            
           </div>
 
 
@@ -424,88 +428,87 @@
             <br/>
 
             <div class="form-group has-success has-feedback">
-<!--               <form action="render" method="post" id="form_main">
- -->
-                <label class="control-label col-sm-3" for="inputSuccess3">Presets</label>
-                <div class="col-sm-9">
-                  <select class="form-control" id="params_presets">
-                    <option>Standard Params</option>
-                    <option selected>3b outputs sharp</option>
-                    <option>inception_4c/output</option>
-                  </select>
-                </div>
+ 
+              <label class="control-label col-sm-3" for="inputSuccess3">Presets</label>
+              <div class="col-sm-9">
+                <select class="form-control input-sm" id="params_presets">
+                  <option>Standard Params</option>
+                  <option selected>3b outputs sharp</option>
+                  <option>inception_4c/output</option>
+                </select>
+              </div>
 
-                <label class="control-label col-sm-3" for="inputSuccess3">Network</label>
-                <div class="col-sm-9">
-                  <select class="form-control" id="params_network"></select>
-                </div>
-              
-                <label class="control-label col-sm-3" for="inputSuccess3">Layers</label>
-                <div class="col-sm-9">
-                  <input type="text" class="form-control" value="inception_4a/output" id="params_layers"/>
-                </div>
+              <label class="control-label col-sm-3" for="inputSuccess3">Network</label>
+              <div class="col-sm-9">
+                <select class="form-control input-sm" id="params_network"></select>
+              </div>
+            
+              <label class="control-label col-sm-3" for="inputSuccess3">Layers</label>
+              <div class="col-sm-9">
+                <input type="text" class="form-control input-sm" value="inception_4a/output" id="params_layers"/>
+              </div>
 
-                <label class="control-label col-sm-3" for="inputSuccess3">Octaves</label>
-                <div class="col-sm-9">
-                  <select class="form-control" id="params_octaves"></select>
-                </div>
-                <label class="control-label col-sm-3" for="inputSuccess3">Octavescale</label>
-                <div class="col-sm-9">
-                  <select class="form-control" id="params_octavescale"></select>
-                </div>
-                <label class="control-label col-sm-3" for="inputSuccess3">Iterations</label>
-                <div class="col-sm-9">
-                  <select class="form-control" id="params_iterations"></select>
-                </div>
+              <label class="control-label col-sm-3" for="inputSuccess3">Octaves</label>
+              <div class="col-sm-9">
+                <select class="form-control input-sm" id="params_octaves"></select>
+              </div>
+              <label class="control-label col-sm-3" for="inputSuccess3">Octavescale</label>
+              <div class="col-sm-9">
+                <select class="form-control input-sm" id="params_octavescale"></select>
+              </div>
+              <label class="control-label col-sm-3" for="inputSuccess3">Iterations</label>
+              <div class="col-sm-9">
+                <select class="form-control input-sm" id="params_iterations"></select>
+              </div>
 
-                <label class="control-label col-sm-3" for="inputSuccess3">Jitter</label>
-                <div class="col-sm-9">
-                  <select class="form-control" id="params_jitter"></select>
-                </div>
+              <label class="control-label col-sm-3" for="inputSuccess3">Jitter</label>
+              <div class="col-sm-9">
+                <select class="form-control input-sm" id="params_jitter"></select>
+              </div>
 
-                <label class="control-label col-sm-3" for="inputSuccess3">Stepsize</label>
-                <div class="col-sm-9">
-                  <select class="form-control" id="params_stepsize"></select>
-                </div>
+              <label class="control-label col-sm-3" for="inputSuccess3">Stepsize</label>
+              <div class="col-sm-9">
+                <select class="form-control input-sm" id="params_stepsize"></select>
+              </div>
 
-                <label class="control-label col-sm-3" for="inputSuccess3">Blend</label>
-                <div class="col-sm-9">
-                  <select class="form-control" id="params_blend"></select>
-                </div>
+              <label class="control-label col-sm-3" for="inputSuccess3">Blend</label>
+              <div class="col-sm-9">
+                <select class="form-control input-sm" id="params_blend"></select>
+              </div>
 
-                <label class="control-label col-sm-3" for="inputSuccess3">Opticalflow</label>
-                <div class="col-sm-9">
-                  <select class="form-control" id="params_opticalflow"></select>
-                </div>
+              <label class="control-label col-sm-3" for="inputSuccess3">Opticalflow</label>
+              <div class="col-sm-9">
+                <select class="form-control input-sm" id="params_opticalflow"></select>
+              </div>
 
-                <label class="control-label col-sm-3" for="inputSuccess3">Guide</label>
-                <div class="col-sm-9">
-                  <input type="text" class="form-control" value="" placeholder="url" id="params_guide" />
-                </div>
+              <label class="control-label col-sm-3" for="inputSuccess3">Guide</label>
+              <div class="col-sm-9">
+                <input type="text" class="form-control input-sm" value="" placeholder="url" id="params_guide" />
+              </div>
 
 
-                <label class="control-label col-sm-3" for="inputSuccess3">GPU</label>
-                <div class="col-sm-9">
-                  <select class="form-control" id="params_gpu"></select>
-                </div>
+              <label class="control-label col-sm-3" for="inputSuccess3">GPU</label>
+              <div class="col-sm-9">
+                <select class="form-control input-sm" id="params_gpu"></select>
+              </div>
 
-                <label class="control-label col-sm-3" for="inputSuccess3">Render</label>
-                <div class="col-sm-9">
+              <label class="control-label col-sm-3" for="inputSuccess3">Render</label>
+              <div class="col-sm-9">
 
-                  <button type="button" class="btn btn-default btn-sm" id="render_final">
-                    <span class="glyphicon glyphicon-hd-video" aria-hidden="true"></span> Render Final
-                  </button>
+                <button type="button" class="btn btn-default btn-sm" id="render_final">
+                  <span class="glyphicon glyphicon-hd-video" aria-hidden="true"></span> Render Final
+                </button>
 
-                  <button type="button" class="btn btn-default btn-sm" id="render_preview">
-                    <span class="glyphicon glyphicon-sd-video" aria-hidden="true"></span> Preview
-                  </button>
+                <button type="button" class="btn btn-default btn-sm" id="render_preview">
+                  <span class="glyphicon glyphicon-sd-video" aria-hidden="true"></span> Preview
+                </button>
 
-                  <button type="button" class="btn btn-default btn-sm" id="render_cancel">
-                    <span class="glyphicon glyphicon-stop" aria-hidden="true"></span> Cancel
-                  </button>
-                </div>
-<!--               </form>
- -->            </div>
+                <button type="button" class="btn btn-default btn-sm" id="render_cancel">
+                  <span class="glyphicon glyphicon-stop" aria-hidden="true"></span> Cancel
+                </button>
+              </div>
+
+            </div>
           </div>
 
           <div class="col-xs-4">
@@ -515,15 +518,11 @@
             </h3>
             <br/>
 
-            <div style="height:565px; width:100%; overflow:hidden; overflow-y:scroll;" id="container_output">
+            <div style="height:520px; width:100%; overflow:hidden; overflow-y:scroll;" id="container_output">
               <div class="input_img" style="background-image:url(http://venturebeat.com/wp-content/uploads/2015/07/deepdream-2.jpeg)"></div>
             </div>
             <br/>
-            
-             <button type="button" class="btn btn-default btn-sm" id="output_makemovie">
-              <span class="glyphicon glyphicon-facetime-video" aria-hidden="true"></span> Make Movie
-            </button>
-
+          
             <button type="button" class="btn btn-default btn-sm" id="output_upload">
               <span class="glyphicon glyphicon-upload" aria-hidden="true"></span> Upload
             </button>
@@ -535,6 +534,11 @@
             <button type="button" class="btn btn-default btn-sm" id="output_makefolder">
               <span class="glyphicon glyphicon-folder-open" aria-hidden="true"></span> Make Folder
             </button>
+
+            <button type="button" class="btn btn-default btn-sm" id="output_makemovie">
+              <span class="glyphicon glyphicon-facetime-video" aria-hidden="true"></span> Make Movie
+            </button>
+
 
           </div>
 
