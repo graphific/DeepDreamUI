@@ -384,6 +384,8 @@
           alert("no files or folders selected");
         }
       });
+
+
       
 
     });
@@ -416,7 +418,7 @@
             </div>
             <br/>
 
-            <button type="button" class="btn btn-default btn-sm" id="input_upload">
+            <button type="button" class="btn btn-default btn-sm" id="input_upload" onclick="$('#input_upload_selector').click();">
               <span class="glyphicon glyphicon-upload" aria-hidden="true"></span> Upload
             </button>
 
@@ -432,6 +434,9 @@
               <span class="glyphicon glyphicon-facetime-video" aria-hidden="true"></span> Make Movie
             </button>
 
+            <form action="" method=post enctype=multipart/form-data>
+              <input id="input_upload_selector" name=file type="file" style="visibility:hidden" onchange="javascript:this.form.submit()" />
+            </form>
           </div>
 
 
@@ -535,8 +540,8 @@
             </div>
             <br/>
           
-            <button type="button" class="btn btn-default btn-sm" id="output_upload">
-              <span class="glyphicon glyphicon-upload" aria-hidden="true"></span> Upload
+            <button type="button" class="btn btn-default btn-sm" id="output_download">
+              <span class="glyphicon glyphicon-download" aria-hidden="true"></span> Download
             </button>
 
             <button type="button" class="btn btn-default btn-sm file_delete">
@@ -550,7 +555,6 @@
             <button type="button" class="btn btn-default btn-sm" id="output_makemovie">
               <span class="glyphicon glyphicon-facetime-video" aria-hidden="true"></span> Make Movie
             </button>
-
 
           </div>
 

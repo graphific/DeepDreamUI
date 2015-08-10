@@ -6,6 +6,7 @@ from flask import Flask,jsonify
 from flask import render_template, redirect, url_for, request
 from flask import abort
 from flask.ext.cors import CORS, cross_origin
+from werkzeug import secure_filename
 
 import json
 import sys
@@ -28,10 +29,14 @@ eventlet.monkey_patch()
 reload(sys)
 sys.setdefaultencoding("utf-8")
 
+UPLOAD_FOLDER = '/Users/samim/sites/DeepDreamUi/static/input'
+ALLOWED_EXTENSIONS = set(['mov', 'mp4', 'png', 'jpg', 'jpeg', 'gif'])
+
 app = Flask(__name__)
 
 cors = CORS(app)
 app.config['CORS_HEADERS'] = 'Content-Type'
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 
 @app.route('/')
@@ -135,7 +140,28 @@ def api_delete():
     return jsonify({'output': response}), 201
 
 
-# Stream Console Output / Start Sub-Process
+
+
+
+# UPLOAD FILES
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
+
+@app.route('/', methods=['GET', 'POST'])
+def upload_file():
+    if request.method == 'POST':
+        file = request.files['file']
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+    return render_template('hello.html')
+
+
+
+
+
+# STREAM Console Output / Start Sub-Process
 @app.route( '/stream' )
 def stream():
     g = proc.Group()
@@ -154,6 +180,10 @@ def stream():
 @app.route('/s')
 def get_page():
     return flask.send_file('console.html')
+
+
+
+
 
 
 # Start Flask App
