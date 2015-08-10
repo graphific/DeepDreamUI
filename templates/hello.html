@@ -11,11 +11,16 @@
     <script src='static/js/nprogress.js'></script>
     <script src="static/js/bootstrap.min.js"></script>
 
-    <link rel="stylesheet" href="static/css/bootstrap.min.css">
+    <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+    <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+
+
+    <!-- <link rel="stylesheet" href="static/css/bootstrap.min.css">
     <link rel="stylesheet" href="static/css/bootstrap-theme.min.css">
-    <link rel="stylesheet" href="static/css/themes/bootstrap.css"/> 
+    <link rel="stylesheet" href="static/css/themes/bootstrap.css"/>  -->
     <link rel='stylesheet' href='static/css/nprogress.css'/>
-    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css"/>
+<!--     <link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css"/>
+ -->    
     <link rel="stylesheet" href="//code.jquery.com/ui/1.10.4/themes/smoothness/jquery-ui.css" />
 
     <link rel="stylesheet" href="static/css/main.css"> 
@@ -48,31 +53,56 @@
         date:"12/12/2016"
       }
     };
+    var selectedFiles = [];
 
     // list directories & files
     function get_directory(id,type) {  
       console.log("get_directory: dir: " + id + " type: " + type);
-
+    
       // check if file is image
       function checkURL(url) { return(url.match(/\.(jpeg|jpg|gif|png)$/) != null); }
       
       // capitalize First Letter
       function capitalizeFirstLetter(string) { return string.charAt(0).toUpperCase() + string.slice(1);}
 
+      // select/deselect files
+      selectedFiles = [];
+      function imageselector(obj,file){
+        if(!obj.hasClass("input_img_selected") ) {
+          obj.addClass("input_img_selected");
+
+          selectedFiles.push(file);
+        } 
+        else {
+          obj.removeClass("input_img_selected");
+          
+          var index = selectedFiles.indexOf(file);
+          selectedFiles.splice(index, 1);
+        }
+        console.log(selectedFiles);
+      }
+
       // directory click handler
       function directoryClickHandler(obj,dir,type,container){
         if(type === "input"){ $(obj).click(function(){ get_directory(dir,type); }).appendTo("#"+container);}
         if(type === "output"){ $(obj).click(function(){ get_directory(dir,type); }).appendTo("#"+container);}      
+      }
+
+      function imageClickHandler(obj,type,container,file){
+        if(type === "input"){ $(obj).click(function(){ imageselector($(this),file); }).appendTo("#"+container);}
+        if(type === "output"){ $(obj).click(function(){ imageselector($(this),file); }).appendTo("#"+container);}      
       }
       
       // clear divs
       if(type === "input"){
         $("#container_input").html("");
         $("#input_dir_display").html("");
+        params_view.params.input = id;
       }
       if(type === "output"){
         $("#container_output").html("");
         $("#output_dir_display").html("");
+        params_view.params.output = id;
       }
 
       function directoryTextDisplay(txt){
@@ -92,7 +122,7 @@
         
           // append directories
           for(var i=0; i<data.dirs.length;i++){
-            dir ='<div class="data_img"><img title="'+data.dirs[i]+'" class="input_img" src="https://i.imgur.com/PRNWsQl.png" /><div class="data_img_text">'+directoryTextDisplay(data.dirs[i])+'</div></div>';
+            dir ='<div class="input_img_container data_img"><img title="'+data.dirs[i]+'" class="input_img" src="https://i.imgur.com/PRNWsQl.png" /><div class="data_img_text">'+directoryTextDisplay(data.dirs[i])+'</div></div>';
             if(type === "input"){ directoryClickHandler(dir,data.dirs[i],"input","container_input"); }
             if(type === "output"){ directoryClickHandler(dir,data.dirs[i],"output","container_output"); }
           }
@@ -102,9 +132,9 @@
           for(var i=0; i<data.files.length;i++){
             if(checkURL(data.files[i])){
               foundimgcount++;
-              var finalreturn ='<img title="'+data.files[i]+'" class="input_img" src="'+ data.files[i] +'" />';
-              if(type === "input"){ $("#container_input").append(finalreturn); }
-              if(type === "output"){ $("#container_output").append(finalreturn); }
+              var newimg ='<div class="input_img_container"><img title="'+data.files[i]+'" class="input_img" src="'+ data.files[i] +'" /></div';
+              if(type === "input"){ imageClickHandler(newimg,"input","container_input",data.files[i]); }
+              if(type === "output"){ imageClickHandler(newimg,"output","container_output",data.files[i]); }
             }
           }
 
@@ -155,7 +185,8 @@
       });
     }
 
-    function get_render() {        
+    function get_render() {   
+      console.log(params_view.params); 
       $.ajax({
         type: "POST",
         contentType: "application/json; charset=utf-8",
@@ -174,16 +205,19 @@
       for(var i = 0; i < params_view.params.presets.length; i++) {
         $("#params_presets").append('<option value="'+params_view.params.presets[i]+'">'+params_view.params.presets[i]+'</option>')
       }
+      $('#params_octaves').on('change', function() { params_view.params.presets = this.value;});
 
       // network
       $("#params_network").empty();
       for(var i = 0; i < params_view.params.network.length; i++) {
         $("#params_network").append('<option value="'+params_view.params.network[i]+'">'+params_view.params.network[i]+'</option>')
       }
+      $('#params_octaves').on('change', function() { params_view.params.network = this.value;});
 
       // layers
       $("#params_layers").val(params_view.params.layers);
-      
+      $('#params_layers').on('change', function() { params_view.params.layers = this.value;});
+
       // octaves
       $("#params_octaves").empty();
       for(var i = 1; i <= 5; i++) {
@@ -191,6 +225,7 @@
         if(i === params_view.params.octaves){selected = 'selected'}
         $("#params_octaves").append('<option '+selected+' value="'+i+'">'+i+'</option>')
       }
+      $('#params_octaves').on('change', function() { params_view.params.octaves = this.value;});
 
       // octave scale
       $("#params_octavescale").empty();
@@ -200,6 +235,7 @@
         if(i === (params_view.params.octavescale*10) ){selected = 'selected'}
         $("#params_octavescale").append('<option '+selected+' value="'+i/10+'">'+i/10+'</option>');
       }
+      $('#params_octavescale').on('change', function() { params_view.params.octavescale = this.value;});
 
       // itterations
       $("#params_iterations").empty();
@@ -208,6 +244,7 @@
         if(i === params_view.params.itterations){selected = 'selected'}
         $("#params_iterations").append('<option '+selected+' value="'+i+'">'+i+'</option>')
       }
+      $('#params_iterations').on('change', function() { params_view.params.itterations = this.value;});
 
       // jitter
       $("#params_jitter").empty();
@@ -216,6 +253,7 @@
         if(i === params_view.params.jitter){selected = 'selected'}
         $("#params_jitter").append('<option '+selected+' value="'+i+'">'+i+'</option>');
       }
+      $('#params_jitter').on('change', function() { params_view.params.jitter = this.value;});
 
       // stepsize
       $("#params_stepsize").empty();
@@ -224,6 +262,7 @@
         if(i === (params_view.params.stepsize*10) ){selected = 'selected'}
         $("#params_stepsize").append('<option '+selected+' value="'+i/10+'">'+i/10+'</option>');
       }
+      $('#params_stepsize').on('change', function() { params_view.params.stepsize = this.value;});
 
       // blend
       $("#params_blend").empty();
@@ -232,6 +271,7 @@
         if(i === (params_view.params.blend*10) ){selected = 'selected'}
         $("#params_blend").append('<option '+selected+' value="'+i/10+'">'+i/10+'</option>');
       }
+      $('#params_blend').on('change', function() { params_view.params.blend = this.value;});
 
       // optical flow
       $("#params_opticalflow").empty();
@@ -240,10 +280,12 @@
         if(i === params_view.params.opticalflow ){selected = 'selected'}
         $("#params_opticalflow").append('<option '+selected+' value="'+i+'">'+i+'</option>');
       }
+      $('#params_opticalflow').on('change', function() { params_view.params.opticalflow = this.value;});
 
       // guide
       $("#params_guide").val(params_view.params.guide);
-      
+      $('#params_guide').on('change', function() { params_view.params.guide = this.value;});
+
       // gpu
       $("#params_gpu").empty();
       for(var i = 0; i <= 1; i++) {
@@ -251,21 +293,87 @@
         if(i === params_view.params.gpu ){selected = 'selected'}
         $("#params_gpu").append('<option '+selected+' value="'+i+'">'+i+'</option>');
       }
+      $('#params_gpu').on('change', function() { params_view.params.gpu = this.value;});
+
     }
 
     $(function() {
       setupForm();
       get_directory("static/input/","input");
       get_directory("static/output/","output");
-      get_console("idtag");
+      //get_console("idtag");
+      //setInterval(function(){ get_console("idtag"); },10000);
 
-      setInterval(function(){ get_console("idtag"); },10000);
-
-      // click handlers
-      $("#form_main").submit(function( event ) {
-        event.preventDefault();
+      /////// click handlers
+      // start renderer
+      $("#render_final").click(function(event) {
+        event.preventDefault(); 
         get_render();
       });
+
+      function makefolder(type){
+        var foldername = prompt("Enter Folder Name", "");
+        if (foldername != null) {
+          var finalfoldername;
+          if(type === "input"){finalfoldername = params_view.params.input + foldername;}
+          if(type === "output"){finalfoldername = params_view.params.output + foldername;}
+          
+          $.ajax({
+            type: "POST",
+            contentType: "application/json; charset=utf-8",
+            url: "/api/v1.0/makefolder",
+            data: JSON.stringify({id:finalfoldername}),
+            success: function (data) {
+              console.log("folder created: " + finalfoldername);
+              if(type === "input"){get_directory(params_view.params.input,type);}
+              if(type === "output"){get_directory(params_view.params.output,type);}
+            },
+            dataType: "json"
+          });
+        }
+      }
+
+      function deleteFile(file){
+        $.ajax({
+          type: "POST",
+          contentType: "application/json; charset=utf-8",
+          url: "/api/v1.0/delete",
+          data: JSON.stringify({id:file}),
+          success: function (data) {
+            console.log("files deleted: " + file);
+            get_directory(params_view.params.input,"input");
+            get_directory(params_view.params.output,"output");
+          },
+          dataType: "json"
+        });
+      }
+
+      // make dir
+      $("#input_makefolder").click(function(event) {
+        event.preventDefault();
+        makefolder("input");
+      });
+      $("#output_makefolder").click(function(event) {
+        event.preventDefault();
+        makefolder("output");
+      });
+
+
+      // delete files
+      $(".file_delete").click(function(event) {
+        event.preventDefault();
+        if(selectedFiles.length > 0){
+          var answer = confirm("Delete "+selectedFiles.length+" files?")
+          if(answer){
+            console.log("delete: " + selectedFiles);
+            deleteFile(selectedFiles);
+          }
+        }
+        else{
+          alert("no files or folders selected");
+        }
+      });
+      
 
     });
   </script>
@@ -277,35 +385,47 @@
         <h1>DeepDreamAnim UI</h1>
         <hr style="background-color:lightgray;"/>
 
-        <form action="render" method="post" id="form_main">
-
-          <div class="row">
+        <div class="row">
+          
+          <div class="col-xs-4">
+            <h3 id="input_dir_display">
+              <span><a href="">Input</a></span> >
+              <span><a href="">Folder</a></span> >
+              <span id="input_amount">0 Images</span>
+            </h3>
+            <br/>
             
-            <div class="col-xs-4">
-              <h3 id="input_dir_display">
-                <span><a href="">Input</a></span> >
-                <span><a href="">Folder</a></span> >
-                <span id="input_amount">0 Images</span>
-              </h3>
-              <br/>
-              
-              <div style="height:565px; width:100%; overflow:hidden; overflow-y:scroll;" id="container_input">
-                <div class="input_img" style="background-image:url(https://i.imgur.com/yjlwXsy.jpg)"></div>
-              </div>
-              <br/>
-              <input type="submit" name="submit" method="post" value="Make Movie">
-              <input type="submit" name="submit" method="post" value="Upload">
-              <input type="submit" name="submit" method="post" value="Delete">
-              <input type="submit" name="submit" method="post" value="Make Folder">
+            <div style="height:565px; width:100%; overflow:hidden; overflow-y:scroll;" id="container_input">
+              <div class="input_img" style="background-image:url(https://i.imgur.com/yjlwXsy.jpg)"></div>
             </div>
+            <br/>
+
+            <button type="button" class="btn btn-default btn-sm" id="input_makemovie">
+              <span class="glyphicon glyphicon-facetime-video" aria-hidden="true"></span> Make Movie
+            </button>
+
+            <button type="button" class="btn btn-default btn-sm" id="input_upload">
+              <span class="glyphicon glyphicon-upload" aria-hidden="true"></span> Upload
+            </button>
+
+            <button type="button" class="btn btn-default btn-sm file_delete">
+              <span class="glyphicon glyphicon-remove" aria-hidden="true"></span> Delete
+            </button>
+
+            <button type="button" class="btn btn-default btn-sm" id="input_makefolder">
+              <span class="glyphicon glyphicon-folder-open" aria-hidden="true"></span> Make Folder
+            </button>
+
+          </div>
 
 
-            <div class="col-xs-4" >
-              <h3>Parameter</h3>
-              <br/>
+          <div class="col-xs-4" >
+            <h3>Parameter</h3>
+            <br/>
 
-              <div class="form-group has-success has-feedback">
-                
+            <div class="form-group has-success has-feedback">
+<!--               <form action="render" method="post" id="form_main">
+ -->
                 <label class="control-label col-sm-3" for="inputSuccess3">Presets</label>
                 <div class="col-sm-9">
                   <select class="form-control" id="params_presets">
@@ -371,39 +491,61 @@
 
                 <label class="control-label col-sm-3" for="inputSuccess3">Render</label>
                 <div class="col-sm-9">
-                  <input type="submit" name="submit" method="post" value="Render Final">
-                  <input type="submit" name="submit" method="post" value="Render Preview">
-                  <input type="submit" name="submit" method="post" value="Cancel">
+
+                  <button type="button" class="btn btn-default btn-sm" id="render_final">
+                    <span class="glyphicon glyphicon-hd-video" aria-hidden="true"></span> Render Final
+                  </button>
+
+                  <button type="button" class="btn btn-default btn-sm" id="render_preview">
+                    <span class="glyphicon glyphicon-sd-video" aria-hidden="true"></span> Render Preview
+                  </button>
+
+                  <button type="button" class="btn btn-default btn-sm" id="render_cancel">
+                    <span class="glyphicon glyphicon-stop" aria-hidden="true"></span> Cancel
+                  </button>
                 </div>
+<!--               </form>
+ -->            </div>
+          </div>
 
-              </div>
+          <div class="col-xs-4">
+            <h3 id="output_dir_display">
+              Output > 
+              <span id="output_amount">0 Images</span>
+            </h3>
+            <br/>
+
+            <div style="height:565px; width:100%; overflow:hidden; overflow-y:scroll;" id="container_output">
+              <div class="input_img" style="background-image:url(http://venturebeat.com/wp-content/uploads/2015/07/deepdream-2.jpeg)"></div>
             </div>
+            <br/>
+            
+             <button type="button" class="btn btn-default btn-sm" id="output_makemovie">
+              <span class="glyphicon glyphicon-facetime-video" aria-hidden="true"></span> Make Movie
+            </button>
 
-            <div class="col-xs-4">
-              <h3 id="output_dir_display">
-                Output > 
-                <span id="output_amount">0 Images</span>
-              </h3>
-              <br/>
+            <button type="button" class="btn btn-default btn-sm" id="output_upload">
+              <span class="glyphicon glyphicon-upload" aria-hidden="true"></span> Upload
+            </button>
 
-              <div style="height:565px; width:100%; overflow:hidden; overflow-y:scroll;" id="container_output">
-                <div class="input_img" style="background-image:url(http://venturebeat.com/wp-content/uploads/2015/07/deepdream-2.jpeg)"></div>
-              </div>
-              <br/>
-              <input type="submit" name="submit" method="post" value="Make Movie">
-              <input type="submit" name="submit" method="post" value="Download">
-              <input type="submit" name="submit" method="post" value="Delete">
-              <input type="submit" name="submit" method="post" value="Make Folder">
-            </div>
+            <button type="button" class="btn btn-default btn-sm file_delete">
+              <span class="glyphicon glyphicon-remove" aria-hidden="true"></span> Delete
+            </button>
 
+            <button type="button" class="btn btn-default btn-sm" id="output_makefolder">
+              <span class="glyphicon glyphicon-folder-open" aria-hidden="true"></span> Make Folder
+            </button>
 
           </div>
-            <br/>
-            <h2>Console</h2>
-            <h4>Clear Console</h4>
-            <textarea class="form-control" id="output_console" rows="20">{{text_input}}</textarea> 
-            <br/><br/> 
-        </form>
+
+
+        </div>
+        <!-- <br/>
+        <h2>Console</h2>
+        <h4>Clear Console</h4>
+        <textarea class="form-control" id="output_console" rows="20">{{text_input}}</textarea> 
+        <br/><br/>  -->
+        
 
      
     </div>

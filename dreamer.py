@@ -119,6 +119,7 @@ def writeToLog(msg):
 
 def main(inputdir, outputdir, preview, octaves, octave_scale, iterations, jitter, zoom, stepsize, blend, layers, guide,
          gpu, flow):
+
     # input var setup
     make_sure_path_exists(inputdir)
     make_sure_path_exists(outputdir)
@@ -159,20 +160,25 @@ def main(inputdir, outputdir, preview, octaves, octave_scale, iterations, jitter
         caffe.set_mode_gpu()
         caffe.set_device(0)
 
-    # load images & sort them
+    # load images
     vidinput = os.listdir(inputdir)
+
     #vidinput = natsort.natsorted(os.listdir(inputdir))
     vids = []
     var_counter = 1
 
     # create list
     for frame in vidinput:
-        if not ".png" or not ".jpg" or not ".jpeg" in frame: continue
-        vids.append(frame)
-    img = PIL.Image.open(inputdir + '/' + vids[0])
+        if frame.endswith('.png') or frame.endswith('.jpg') or frame.endswith('.jpeg'):
+            vids.append(frame)
+
+    fullpath = inputdir + '/' + vids[0]
+    img = PIL.Image.open(fullpath)
+
     if preview is not 0:
-        img = resizePicture(inputdir + '/' + vids[0], preview)
+        img = resizePicture(fullpath, preview)
     frame = np.float32(img)
+
 
     # guide
     if guide is not None:
