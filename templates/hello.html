@@ -35,7 +35,7 @@
     // main param Json
     var params_view = { 
       params: {
-        presets: ["coolpreset", "hotpreset"],
+        presets: ["full", "medium","low"],
         network: ["googlelenet", "placesnet"],
         layers: "inception_3b/output",
         octaves: 4,
@@ -60,7 +60,8 @@
       console.log("get_directory: dir: " + id + " type: " + type);
     
       // check if file is image
-      function checkURL(url) { return(url.match(/\.(jpeg|jpg|gif|png)$/) != null); }
+      function checkURLImg(url) { return(url.match(/\.(jpeg|jpg|png)$/) != null); }
+      function checkURLVid(url) { return(url.match(/\.(mp4|mov)$/) != null); }
       
       // capitalize First Letter
       function capitalizeFirstLetter(string) { return string.charAt(0).toUpperCase() + string.slice(1);}
@@ -103,6 +104,11 @@
         if(type === "input"){ $(obj).click(function(){ imageselector($(this),file); }).appendTo("#"+container);}
         if(type === "output"){ $(obj).click(function(){ imageselector($(this),file); }).appendTo("#"+container);}      
       }
+
+      function videoClickHandler(obj,type,container,file){
+        if(type === "input"){ $(obj).click(function(){ imageselector($(this),file); }).appendTo("#"+container);}
+        if(type === "output"){ $(obj).click(function(){ imageselector($(this),file); }).appendTo("#"+container);}      
+      }
       
       // clear divs
       if(type === "input"){
@@ -133,17 +139,30 @@
         
           // append directories
           for(var i=0; i<data.dirs.length;i++){
-            dir ='<div class="input_img_container data_img"><img title="'+data.dirs[i]+'" class="input_img" src="https://i.imgur.com/PRNWsQl.png" /><div class="data_img_text">'+directoryTextDisplay(data.dirs[i])+'</div></div>';
+            var dir ='<div class="input_img_container data_img"><img title="'+data.dirs[i]+'" class="input_img" src="https://i.imgur.com/PRNWsQl.png" /><div class="data_img_text">'+directoryTextDisplay(data.dirs[i])+'</div></div>';
             if(type === "input"){ directoryClickHandler(dir,data.dirs[i],"input","container_input",true); }
             if(type === "output"){ directoryClickHandler(dir,data.dirs[i],"output","container_output",true); }
+          }
+
+          // append video
+          for(var i=0; i<data.files.length;i++){
+            if(checkURLVid(data.files[i])){
+              var vid ='<div class="input_img_container data_img"><img title="'+data.files[i]+'" class="input_img" src="http://megaicons.net/static/img/icons_sizes/8/178/512/photo-video-start-icon.png" /><div class="data_img_text">'+directoryTextDisplay(data.files[i])+'</div></div>';
+
+              if(type === "input"){ videoClickHandler(vid,"input","container_input",data.files[i]); }
+              if(type === "output"){ videoClickHandler(vid,"output","container_output",data.files[i]); }
+            }
           }
 
           var foundimgcount = 0;
           // append images
           for(var i=0; i<data.files.length;i++){
-            if(checkURL(data.files[i])){
+
+            if(checkURLImg(data.files[i])){
+              var timestamp = new Date().getTime();
+
               foundimgcount++;
-              var newimg ='<div class="input_img_container"><img title="'+data.files[i]+'" class="input_img" src="'+ data.files[i] +'" /></div';
+              var newimg ='<div class="input_img_container"><img title="'+data.files[i]+'" class="input_img" src="'+ data.files[i] +'?'+timestamp+' " /></div';
               if(type === "input"){ imageClickHandler(newimg,"input","container_input",data.files[i]); }
               if(type === "output"){ imageClickHandler(newimg,"output","container_output",data.files[i]); }
             }
@@ -196,8 +215,27 @@
       });
     }
 
+    function stop_render(){
+      $("#render_final").show();
+      $("#render_final_stop").hide();
+
+      $.ajax({
+        type: "POST",
+        contentType: "application/json; charset=utf-8",
+        url: "/api/v1.0/stoprender",
+        data: JSON.stringify(params_view.params),
+        success: function (data) {
+          console.log(data);
+        },
+        dataType: "json"
+      });
+    }
+
     function get_render() {   
       console.log(params_view.params); 
+      $("#render_final").hide();
+      $("#render_final_stop").show();
+
       $.ajax({
         type: "POST",
         contentType: "application/json; charset=utf-8",
@@ -205,6 +243,8 @@
         data: JSON.stringify(params_view.params),
         success: function (data) {
           console.log(data);
+          $("#render_final").show();
+          $("#render_final_stop").hide();
         },
         dataType: "json"
       });
@@ -308,18 +348,41 @@
 
     }
 
+    var renderInterval;
+
     $(function() {
       setupForm();
       get_directory("static/input/","input");
       get_directory("static/output/","output");
-      //get_console("idtag");
-      //setInterval(function(){ get_console("idtag"); },10000);
+      get_console("idtag");
+      $("#render_final").show();
+      $("#render_final_stop").hide();
+
 
       /////// click handlers
       // start renderer
       $("#render_final").click(function(event) {
         event.preventDefault(); 
         get_render();
+        // renderer feedback
+        clearInterval(renderInterval);
+        renderInterval = setInterval(function(){ 
+          get_console("idtag"); 
+          setTimeout(function(){
+            var textarea = document.getElementById('output_console');
+            textarea.scrollTop = textarea.scrollHeight + 100;  
+            get_directory(params_view.params.output,"output");
+          },200);
+        },5000);
+      });
+
+      // stop renderer
+      $("#render_final_stop").click(function(event) {
+        event.preventDefault(); 
+        stop_render();
+        clearInterval(renderInterval);
+        renderInterval = null;
+        get_directory(params_view.params.output,"output");
       });
 
       function makefolder(type){
@@ -386,6 +449,10 @@
       });
 
 
+      // var source = new EventSource("/stream");
+      // source.onmessage = function(event) {
+      //     document.getElementById("output_console").innerHTML += event.data + "<br/>"
+      // }
       
 
     });
@@ -398,8 +465,8 @@
         <ul class="nav nav-tabs">
           <li class="active"><a href="#"><strong>DeepDream UI</strong></a></li>
           <li><a href="#">Jobs</a></li>
-          <li><a href="#">Console</a></li>
-          <li><a href="#">Settings</a></li>
+<!--           <li><a href="#">Console</a></li>
+ -->          <li><a href="#">Settings</a></li>
         </ul>
         <br/>
 
@@ -413,11 +480,7 @@
             </h3>
             <br/>
             
-            <div style="height:520px; width:100%; overflow:hidden; overflow-y:scroll;" id="container_input">
-              <div class="input_img" style="background-image:url(https://i.imgur.com/yjlwXsy.jpg)"></div>
-            </div>
-            <br/>
-
+        
             <button type="button" class="btn btn-default btn-sm" id="input_upload" onclick="$('#input_upload_selector').click();">
               <span class="glyphicon glyphicon-upload" aria-hidden="true"></span> Upload
             </button>
@@ -431,27 +494,50 @@
             </button>
 
             <button type="button" class="btn btn-default btn-sm" id="input_makemovie">
-              <span class="glyphicon glyphicon-facetime-video" aria-hidden="true"></span> Make Movie
+              <span class="glyphicon glyphicon-facetime-video" aria-hidden="true"></span> Extract Movie
             </button>
 
             <form action="" method=post enctype=multipart/form-data>
               <input id="input_upload_selector" name=file type="file" style="visibility:hidden" onchange="javascript:this.form.submit()" />
             </form>
+
+             <div style="height:520px; width:100%; overflow:hidden; overflow-y:scroll; border:1px solid lightgray" id="container_input">
+              <div class="input_img" style="background-image:url(https://i.imgur.com/yjlwXsy.jpg)"></div>
+            </div>
+            
           </div>
 
 
           <div class="col-xs-4" >
-            <h3>Parameter</h3>
+            <h3>Parameter
+            <div style="float:right;font-size:13px;color:lightgray">Unnamed Jobs</div>
+            </h3>
             <br/>
 
             <div class="form-group has-success has-feedback">
- 
-              <label class="control-label col-sm-3" for="inputSuccess3">Presets</label>
+  
+
+                <button type="button" class="btn btn-success btn-sm" id="render_final">
+                  <span class="glyphicon glyphicon-hd-video" aria-hidden="true"></span> Start Render
+                </button>
+
+                <button type="button" class="btn btn-danger btn-sm" id="render_final_stop">
+                  <span class="glyphicon glyphicon-hd-video" aria-hidden="true"></span> Stop Render
+                </button>
+
+                <button type="button" class="btn btn-default btn-sm" id="render_savejob">
+                  <span class="glyphicon glyphicon-sd-video" aria-hidden="true"></span> Save Job
+                </button>
+                
+              <br/><br/>
+
+              <label class="control-label col-sm-3" for="inputSuccess3">Quality</label>
+
               <div class="col-sm-9">
                 <select class="form-control input-sm" id="params_presets">
-                  <option>Standard Params</option>
-                  <option selected>3b outputs sharp</option>
-                  <option>inception_4c/output</option>
+                  <option selected>High</option>
+                  <option>Medium</option>
+                  <option>Low</option>
                 </select>
               </div>
 
@@ -509,21 +595,7 @@
                 <select class="form-control input-sm" id="params_gpu"></select>
               </div>
 
-              <label class="control-label col-sm-3" for="inputSuccess3">Render</label>
-              <div class="col-sm-9">
-
-                <button type="button" class="btn btn-default btn-sm" id="render_final">
-                  <span class="glyphicon glyphicon-hd-video" aria-hidden="true"></span> Render Final
-                </button>
-
-                <button type="button" class="btn btn-default btn-sm" id="render_preview">
-                  <span class="glyphicon glyphicon-sd-video" aria-hidden="true"></span> Preview
-                </button>
-
-                <button type="button" class="btn btn-default btn-sm" id="render_cancel">
-                  <span class="glyphicon glyphicon-stop" aria-hidden="true"></span> Cancel
-                </button>
-              </div>
+              
 
             </div>
           </div>
@@ -535,11 +607,7 @@
             </h3>
             <br/>
 
-            <div style="height:520px; width:100%; overflow:hidden; overflow-y:scroll;" id="container_output">
-              <div class="input_img" style="background-image:url(http://venturebeat.com/wp-content/uploads/2015/07/deepdream-2.jpeg)"></div>
-            </div>
-            <br/>
-          
+           
             <button type="button" class="btn btn-default btn-sm" id="output_download">
               <span class="glyphicon glyphicon-download" aria-hidden="true"></span> Download
             </button>
@@ -556,15 +624,22 @@
               <span class="glyphicon glyphicon-facetime-video" aria-hidden="true"></span> Make Movie
             </button>
 
+            <br/><br/>
+
+             <div style="height:520px; width:100%; overflow:hidden; overflow-y:scroll;border:1px solid lightgray" id="container_output">
+              <div class="input_img" style="background-image:url(http://venturebeat.com/wp-content/uploads/2015/07/deepdream-2.jpeg)"></div>
+            </div>
+          
+
           </div>
 
 
         </div>
-        <!-- <br/>
+        <br/>
         <h2>Console</h2>
         <h4>Clear Console</h4>
-        <textarea class="form-control" id="output_console" rows="20">{{text_input}}</textarea> 
-        <br/><br/>  -->
+        <textarea class="form-control" id="output_console" rows="20"></textarea> 
+        <br/><br/> 
         
 
      

@@ -15,15 +15,12 @@ import time
 
 import os
 import io
+import signal
 
 from os import listdir
 from os.path import isfile, join
 from os import path
 import subprocess
-
-from shelljob import proc
-import eventlet
-eventlet.monkey_patch()
 
 
 reload(sys)
@@ -42,6 +39,9 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 @app.route('/')
 def index(text_input= "", text_output= ""):
     return render_template('hello.html', text_input="", text_output="")
+
+
+newproc = 0
 
 # Start deepdream renderer
 @app.route('/api/v1.0/getrender', methods=['POST'])
@@ -66,7 +66,25 @@ def api_render():
 
     print "DeepDream Start"
     command = 'python dreamer.py --preview 0 --input '+str(inputdir)+' --output '+str(outputdir)+' --octaves '+str(octaves)+' --octavescale '+str(octavescale)+' --iterations '+str(itterations)+' --jitter '+str(jitter)+' --stepsize '+str(stepsize)+' --blend '+str(blend)+' --layers '+str(layers)+' --gpu '+str(gpu)+' --flow '+str(opticalflow)+' '+finalguide+''
-    return subprocess.call(command, shell=True)
+    #return subprocess.call(command, shell=True)
+    #return subprocess.Popen(command, shell=True)
+
+   # newproc = subprocess.Popen(command, stdout=subprocess.PIPE, 
+    #                   shell=True, preexec_fn=os.setsid) 
+
+    newproc = subprocess.Popen("exec " + command, stdout=subprocess.PIPE, shell=True)
+
+
+    return newproc
+
+# Stop deepdream renderer
+@app.route('/api/v1.0/stoprender', methods=['POST'])
+def api_renderstop():
+    print "DeepDream KILL"
+    subprocess.Popen.kill(newproc)
+    os.killpg(newproc.pid, signal.SIGTERM)  # Send the signal to all the process groups
+    newproc.kill()
+    return 'killed'
 
 # Show console
 @app.route('/api/v1.0/getconsole', methods=['POST'])
@@ -141,8 +159,6 @@ def api_delete():
 
 
 
-
-
 # UPLOAD FILES
 def allowed_file(filename):
     return '.' in filename and \
@@ -156,32 +172,6 @@ def upload_file():
             filename = secure_filename(file.filename)
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
     return render_template('hello.html')
-
-
-
-
-
-# STREAM Console Output / Start Sub-Process
-@app.route( '/stream' )
-def stream():
-    g = proc.Group()
-    #p = g.run( [ "bash", "-c", "for ((i=0;i<100;i=i+1)); do echo $i; sleep 1; done" ] )
-    p = g.run( [ "python", "dreamer.py", "-i", "static/input", "-o", "static/output" ] )
-
-    def read_process():
-        while g.is_pending():   
-            lines = g.readlines()
-            for proc, line in lines:
-                yield "data:" + line + "\n\n"
-                #p.kill()
-
-    return flask.Response( read_process(), mimetype= 'text/event-stream' )
-
-@app.route('/s')
-def get_page():
-    return flask.send_file('console.html')
-
-
 
 
 

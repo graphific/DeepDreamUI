@@ -223,7 +223,7 @@ def main(inputdir, outputdir, preview, octaves, octave_scale, iterations, jitter
         h, m = divmod(m, 60)
         ret += 'Estimated Total Time Remaining: ' + str(timeleft) + 's (' + "%d:%02d:%02d" % (h, m, s) + ')' + '\n'
         ret += '***************************************' + '\n'+ '\n'
-        writeToLog(ret)
+        writeToLog(ret + '\n')
 
     if flow is 1:
         import cv2
@@ -241,7 +241,7 @@ def main(inputdir, outputdir, preview, octaves, octave_scale, iterations, jitter
                 previousGrayImg = grayImg
 
                 newframe = inputdir + '/' + vids[v + 1]
-                print 'Processing: ' + newframe
+                writeToLog( 'Processing: ' + str(newframe) + '\n')
                 endparam = layers[var_counter % len(layers)]
 
                 img = np.float32(PIL.Image.open(newframe))
@@ -266,7 +266,7 @@ def main(inputdir, outputdir, preview, octaves, octave_scale, iterations, jitter
                 PIL.Image.fromarray(np.uint8(hallu)).save(saveframe)
                 var_counter += 1
             else:
-                print 'Finished processing all frames'
+                writeToLog('Finished processing all frames'+ '\n')
     else:
         # process anim frames
         for v in range(len(vids)):
@@ -275,7 +275,7 @@ def main(inputdir, outputdir, preview, octaves, octave_scale, iterations, jitter
                 h, w = frame.shape[:2]
                 s = 0.05  # scale coefficient  
 
-                print 'Processing: ' + inputdir + '/' + vid
+                writeToLog('Processing: ' + str(inputdir) + '/' + str(vid) + '\n')
 
                 # setup
                 now = time.time()
@@ -305,7 +305,7 @@ def main(inputdir, outputdir, preview, octaves, octave_scale, iterations, jitter
                 frame = np.float32(frame)
                 var_counter += 1
             else:
-                print 'Finished processing all frames'
+                writeToLog('Finished processing all frames'+ '\n')
 
 
 def extractVideo(inputdir, outputdir):
@@ -343,7 +343,8 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     print args
-
+    writeToLog(args.input + '\n')
+    
     if args.extract is 1:
         extractVideo(args.input, args.output)
     elif args.create is 1:
