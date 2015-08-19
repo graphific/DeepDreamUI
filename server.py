@@ -22,11 +22,13 @@ from os.path import isfile, join
 from os import path
 import subprocess
 
+import argparse
+
 
 reload(sys)
 sys.setdefaultencoding("utf-8")
 
-UPLOAD_FOLDER = '/Users/samim/sites/DeepDreamUi/static/input'
+UPLOAD_FOLDER = '/home/roelof/CODE/DeepDreamUi/static/input'
 ALLOWED_EXTENSIONS = set(['mov', 'mp4', 'png', 'jpg', 'jpeg', 'gif'])
 
 app = Flask(__name__)
@@ -46,6 +48,7 @@ newproc = 0
 # Start deepdream renderer
 @app.route('/api/v1.0/getrender', methods=['POST'])
 def api_render():
+    presets = request.json['presets'] #low, medium, high
     network = request.json['network'] 
     layers = request.json['layers']
     octaves = request.json['octaves']
@@ -64,8 +67,12 @@ def api_render():
     if len(guide) != 0:
         finalguide = '--guide ' + str(guide) 
 
+    preview = 0
+    if presets == 'low': preview = 80
+    elif presets == 'medium': preview = 360
+
     print "DeepDream Start"
-    command = 'python dreamer.py --preview 0 --input '+str(inputdir)+' --output '+str(outputdir)+' --octaves '+str(octaves)+' --octavescale '+str(octavescale)+' --iterations '+str(itterations)+' --jitter '+str(jitter)+' --stepsize '+str(stepsize)+' --blend '+str(blend)+' --layers '+str(layers)+' --gpu '+str(gpu)+' --flow '+str(opticalflow)+' '+finalguide+''
+    command = 'python dreamer.py --preview '+str(preview)+' --input '+str(inputdir)+' --output '+str(outputdir)+' --octaves '+str(octaves)+' --octavescale '+str(octavescale)+' --iterations '+str(itterations)+' --jitter '+str(jitter)+' --stepsize '+str(stepsize)+' --blend '+str(blend)+' --layers '+str(layers)+' --gpu '+str(gpu)+' --flow '+str(opticalflow)+' '+finalguide+''
     #return subprocess.call(command, shell=True)
     #return subprocess.Popen(command, shell=True)
 
@@ -125,8 +132,39 @@ def api_input():
             founddirs.append(found)
         break
 
+    foundfile.sort()
+    founddirs.sort()
     return jsonify({'root': root, 'files': foundfile, 'dirs': founddirs}), 201
-  
+
+# Exctract frames of movie
+@app.route('/api/v1.0/extractmovie', methods=['POST'])
+def api_extractmovie():
+    print "api_extractmovie()"
+    print request.json
+    if not request.json or not 'movie' in request.json or not 'directory' in request.json:
+        abort(400)
+    mfile = request.json['movie'] #low, medium, high
+    mdir = request.json['directory'] 
+
+    #command = 'mkdir ' + foldername
+    #response = subprocess.call(command, shell=True)
+
+    #return jsonify({'output': response}), 201
+    print "Start Extracting Frames"
+    command = 'python dreamer.py --input '+str(mfile)+' --output '+str(mdir)+' --extract 1'
+    print command
+    #return subprocess.call(command, shell=True)
+    #return subprocess.Popen(command, shell=True)
+
+   # newproc = subprocess.Popen(command, stdout=subprocess.PIPE, 
+    #                   shell=True, preexec_fn=os.setsid) 
+
+    newproc = subprocess.Popen("exec " + command, stdout=subprocess.PIPE, shell=True)
+
+
+    return newproc
+
+
 # Create new directory
 @app.route('/api/v1.0/makefolder', methods=['POST'])
 def api_makefolder():
@@ -175,7 +213,11 @@ def upload_file():
 
 
 
-
 # Start Flask App
 if __name__ == '__main__':
-    app.run(debug=True)
+    parser = argparse.ArgumentParser(description='DeepDreamUI')
+    parser.add_argument('--port', '-p', default='10', type=int)
+
+    args = parser.parse_args()
+
+    app.run(debug=True,port=args.port)
