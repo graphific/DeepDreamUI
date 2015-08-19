@@ -145,6 +145,10 @@ def main(inputdir, outputdir, preview, octaves, octave_scale, iterations, jitter
     net_fn = model_path + 'deploy.prototxt'
     param_fn = model_path + 'bvlc_googlenet.caffemodel'
 
+    if gpu is 1:
+        caffe.set_mode_gpu()
+        caffe.set_device(0)
+
     # Patching model to be able to compute gradients.
     # Note that you can also manually add "force_backward: true" line to "deploy.prototxt".
     model = caffe.io.caffe_pb2.NetParameter()
@@ -156,12 +160,11 @@ def main(inputdir, outputdir, preview, octaves, octave_scale, iterations, jitter
                            mean=np.float32([104.0, 116.0, 122.0]),  # ImageNet mean, training set dependent
                            channel_swap=(2, 1, 0))  # the reference model has channels in BGR order instead of RGB
 
-    if gpu is 1:
-        caffe.set_mode_gpu()
-        caffe.set_device(0)
+    
 
-    # load images
+    # load images & sort them
     vidinput = os.listdir(inputdir)
+    vidinput.sort()
 
     #vidinput = natsort.natsorted(os.listdir(inputdir))
     vids = []
@@ -183,7 +186,10 @@ def main(inputdir, outputdir, preview, octaves, octave_scale, iterations, jitter
     # guide
     if guide is not None:
         guideimg = PIL.Image.open(inputdir + '/' + guide)
-        guideimgresized = guideimg.resize((224, 224), PIL.Image.ANTIALIAS)
+        if not preview == 0:
+            guideimgresized = resizePicture(inputdir + '/' + guide, preview)
+        else:
+            guideimgresized = guideimg.resize((224, 224), PIL.Image.ANTIALIAS)
         guide = np.float32(guideimgresized)
         end = layers[0]  # 'inception_3b/output'
         h, w = guide.shape[:2]
@@ -229,7 +235,10 @@ def main(inputdir, outputdir, preview, octaves, octave_scale, iterations, jitter
         import cv2
 
         # optical flow
-        img = np.float32(PIL.Image.open(inputdir + '/' + vids[0]))
+        if not preview == 0:
+            img = np.float32(resizePicture(inputdir + '/' + vids[0], preview))
+        else:
+            img = np.float32(PIL.Image.open(inputdir + '/' + vids[0]))
         h, w, c = img.shape
         hallu = getFrame(net, img, layers[0])
         np.clip(hallu, 0, 255, out=hallu)
@@ -244,7 +253,10 @@ def main(inputdir, outputdir, preview, octaves, octave_scale, iterations, jitter
                 writeToLog( 'Processing: ' + str(newframe) + '\n')
                 endparam = layers[var_counter % len(layers)]
 
-                img = np.float32(PIL.Image.open(newframe))
+                if not preview == 0:
+                    img = np.float32(resizePicture(newframe, preview))
+                else:
+                    img = np.float32(PIL.Image.open(newframe))
                 grayImg = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
                 flow = cv2.calcOpticalFlowFarneback(previousGrayImg, grayImg, pyr_scale=0.5, levels=3, winsize=15,
                                                     iterations=3, poly_n=5, poly_sigma=1.2, flags=0)
@@ -292,14 +304,11 @@ def main(inputdir, outputdir, preview, octaves, octave_scale, iterations, jitter
                 # setup next image
                 newframe = inputdir + '/' + vids[v + 1]
 
-                # blend
-                if blend == 0:
-                    newimg = PIL.Image.open(newframe)
-                    if preview is not 0:
-                        newimg = resizePicture(newframe, preview)
-                    frame = newimg
+                #blend 0.1 is keep 10%, 0.9 = keep 90% of prev picture
+                if not blend == 0:
+                    frame = morphPicture(newframe, saveframe, blend, preview)
                 else:
-                    frame = morphPicture(saveframe, newframe, blend, preview)
+                    frame = PIL.Image.open(newframe)
 
                 # setup next frame
                 frame = np.float32(frame)
@@ -309,6 +318,8 @@ def main(inputdir, outputdir, preview, octaves, octave_scale, iterations, jitter
 
 
 def extractVideo(inputdir, outputdir):
+    if not os.path.exists(outputdir):
+        os.makedirs(outputdir)
     print subprocess.Popen('ffmpeg -i ' + inputdir + ' -f image2 ' + outputdir + '/image-%06d.png', shell=True,
                            stdout=subprocess.PIPE).stdout.read()
 

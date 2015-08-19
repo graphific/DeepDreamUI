@@ -10,6 +10,7 @@
     <script src="static/js/buzz.min.js"></script>
     <script src='static/js/nprogress.js'></script>
     <script src="static/js/bootstrap.min.js"></script>
+    <script src="https://raw.githubusercontent.com/dimsemenov/Magnific-Popup/master/dist/jquery.magnific-popup.js"></script>
 
     <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
     <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
@@ -19,6 +20,8 @@
     <link rel="stylesheet" href="static/css/bootstrap-theme.min.css">
     <link rel="stylesheet" href="static/css/themes/bootstrap.css"/>  -->
     <link rel='stylesheet' href='static/css/nprogress.css'/>
+    <link rel='stylesheet' href='static/css/magnific-popup.css'/>
+
 <!--     <link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css"/>
  -->    
     <link rel="stylesheet" href="//code.jquery.com/ui/1.10.4/themes/smoothness/jquery-ui.css" />
@@ -100,9 +103,75 @@
         }   
       }
 
-      function imageClickHandler(obj,type,container,file){
-        if(type === "input"){ $(obj).click(function(){ imageselector($(this),file); }).appendTo("#"+container);}
-        if(type === "output"){ $(obj).click(function(){ imageselector($(this),file); }).appendTo("#"+container);}      
+      function popupimage(file) {
+        /*$.magnificPopup.open({
+          items: {
+            src: obj,
+            type: 'image'
+          }
+        });*/
+        //var nr = $('#container_output').find('.frame').length;
+        //$('.popup-gallery').magnificPopup('open'); // Will open the popup
+        $('#container_output').find('.frame').each(function( index, value ) {
+          console.log($(this));
+          console.log( $(this).attr('src'), file);
+
+          if( $(this).attr('src').indexOf(file) > -1 )
+            $('.popup-gallery').magnificPopup('open', index); // Will open popup with 5th item
+        });
+        
+        
+        //$('.element-with-popup').magnificPopup('next');
+        //$('.element-with-popup').magnificPopup('goTo', 3);
+
+      }
+      function imageClickHandler(obj,type,container,file,doublclick){
+
+        if(doublclick) {
+
+         $('.popup-gallery').magnificPopup({
+            delegate: 'a',
+            type: 'image',
+            tLoading: 'Loading image #%curr%...',
+            mainClass: 'mfp-img-mobile',
+            gallery: {
+              enabled: true,
+              navigateByImgClick: true,
+              preload: [0,1] // Will preload 0 - before current, and 1 after the current image
+            },
+            image: {
+              tError: '<a href="%url%">The image #%curr%</a> could not be loaded.',
+              titleSrc: function(item) {
+                return item.el.attr('title'); //+ '<small>by Marsel Van Oosten</small>';
+              }
+            }
+          });
+
+
+          /*$('.popup-gallery').magnificPopup({
+            type: 'image',
+            tLoading: 'Loading image #%curr%...',
+            mainClass: 'mfp-img-mobile',
+            gallery: {
+              enabled: true,
+              navigateByImgClick: true,
+              preload: [0,1] // Will preload 0 - before current, and 1 after the current image
+            }
+          });*/
+          
+          if(type === "input"){ 
+            $(obj).click(function(){ imageselector($(this),file); }).dblclick(function(){ popupimage(file); }).appendTo("#"+container);
+
+          }
+          if(type === "output"){ 
+            $(obj).click(function(){ imageselector($(this),file); }).dblclick(function(){ popupimage(file); }).appendTo("#"+container);
+          }   
+
+        } else {
+          if(type === "input"){ $(obj).click(function(){ imageselector($(this),file); }).appendTo("#"+container);}
+          if(type === "output"){ $(obj).click(function(){ imageselector($(this),file); }).appendTo("#"+container);}   
+        }
+       
       }
 
       function videoClickHandler(obj,type,container,file){
@@ -155,6 +224,7 @@
           }
 
           var foundimgcount = 0;
+          $('.popup-gallery').html('');
           // append images
           for(var i=0; i<data.files.length;i++){
 
@@ -162,9 +232,16 @@
               var timestamp = new Date().getTime();
 
               foundimgcount++;
-              var newimg ='<div class="input_img_container"><img title="'+data.files[i]+'" class="input_img" src="'+ data.files[i] +'?'+timestamp+' " /></div';
+              var newimg ='<div class="input_img_container"><img title="'+data.files[i]+'" class="input_img frame" src="'+ data.files[i] +'?'+timestamp+' " /></div';
               if(type === "input"){ imageClickHandler(newimg,"input","container_input",data.files[i]); }
-              if(type === "output"){ imageClickHandler(newimg,"output","container_output",data.files[i]); }
+              if(type === "output"){ 
+                imageClickHandler(newimg,"output","container_output",data.files[i]);
+
+                $('.popup-gallery').append('<a href="'+data.files[i]+'" title="'+data.files[i]+'"><img src="'+data.files[i]+'" height="75" width="75"></a>');
+              }
+
+              if(type === "input"){ imageClickHandler(newimg,"input","container_input",data.files[i],true); }
+              if(type === "output"){ imageClickHandler(newimg,"output","container_output",data.files[i],true); }
             }
           }
 
@@ -422,6 +499,46 @@
         });
       }
 
+
+      function extractmovie(file,dir) {
+        $.ajax({
+          type: "POST",
+          contentType: "application/json; charset=utf-8",
+          url: "/api/v1.0/extractmovie",
+          data: JSON.stringify({movie:file,directory:dir}),
+          success: function (data) {
+            console.log("frames extracted from: " + file);
+            get_directory(params_view.params.input,"input");
+            get_directory(params_view.params.output,"output");
+          },
+          dataType: "json"
+        });
+      }
+
+      //extract movie
+      $("#input_makemovie").click(function(event) {
+        event.preventDefault();
+
+        inputitems = []
+        selectedFiles.map( function(item) {
+          //alert(item);
+          if(item.indexOf("static/input/") > -1 && ( item.indexOf(".mp4") > -1 || item.indexOf(".avi") > -1 ) ) 
+            inputitems.push(item);
+        })
+        if(inputitems.length > 1)
+          alert('please select only one movie at a time');
+        else if(inputitems.length == 0)
+          alert('nothing selected, mp4 and avi only for now');
+        else {
+          
+        //var file = prompt("file", "");
+        var dir = prompt("dir", "");
+          //params_view.params.input + 
+          extractmovie(inputitems[0], params_view.params.input + dir);
+        }
+        
+      });
+
       // make dir
       $("#input_makefolder").click(function(event) {
         event.preventDefault();
@@ -628,6 +745,9 @@
 
              <div style="height:520px; width:100%; overflow:hidden; overflow-y:scroll;border:1px solid lightgray" id="container_output">
               <div class="input_img" style="background-image:url(http://venturebeat.com/wp-content/uploads/2015/07/deepdream-2.jpeg)"></div>
+            </div>
+            <div class="popup-gallery" style='display: none;'></div>
+
             </div>
           
 
