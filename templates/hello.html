@@ -104,14 +104,34 @@
       }
 
       function popupimage(file,container,image) {
+        $('.popup-gallery').magnificPopup({
+          delegate: 'a',
+          type: 'image',
+          tLoading: 'Loading image #%curr%...',
+          mainClass: 'mfp-img-mobile',
+          gallery: {
+            enabled: true,
+            navigateByImgClick: true,
+            preload: [0,1] // Will preload 0 - before current, and 1 after the current image
+          },
+          image: {
+            tError: '<a href="%url%">The image #%curr%</a> could not be loaded.',
+            titleSrc: function(item) {
+              return item.el.attr('title'); //+ '<small>by Marsel Van Oosten</small>';
+            }
+          }
+        });
+
         $('.popup-gallery').html('');
 
         $(container).find(image).each(function( index, value ) {
           $('.popup-gallery').append('<a href="'+value.src+'" title="'+value.title+'"><img src="'+value.src+'" height="75" width="75"></a>');
         });
 
+
         $(container).find(image).each(function( index, value ) {
           if(file === value.title){
+            console.log("magnificPopup open index: " + index + " filename: " + value.title);
             $('.popup-gallery').magnificPopup('open', index); // Will open popup with 5th item
           }
         });
@@ -162,7 +182,7 @@
         
           // append directories
           for(var i=0; i<data.dirs.length;i++){
-            var dir ='<div class="input_img_container data_img"><img title="'+data.dirs[i]+'" class="input_img" src="https://i.imgur.com/PRNWsQl.png" /><div class="data_img_text">'+directoryTextDisplay(data.dirs[i])+'</div></div>';
+            var dir ='<div class="input_img_container data_img"><img title="'+data.dirs[i]+'" class="input_img" src="static/img/folder.png" /><div class="data_img_text">'+directoryTextDisplay(data.dirs[i])+'</div></div>';
             if(type === "input"){ directoryClickHandler(dir,data.dirs[i],"input","container_input",true); }
             if(type === "output"){ directoryClickHandler(dir,data.dirs[i],"output","container_output",true); }
           }
@@ -170,7 +190,7 @@
           // append video
           for(var i=0; i<data.files.length;i++){
             if(checkURLVid(data.files[i])){
-              var vid ='<div class="input_img_container data_img"><img title="'+data.files[i]+'" class="input_img" src="http://megaicons.net/static/img/icons_sizes/8/178/512/photo-video-start-icon.png" /><div class="data_img_text">'+directoryTextDisplay(data.files[i])+'</div></div>';
+              var vid ='<div class="input_img_container data_img"><img title="'+data.files[i]+'" class="input_img" src="static/img/video.png" /><div class="data_img_text">'+directoryTextDisplay(data.files[i])+'</div></div>';
 
               if(type === "input"){ videoClickHandler(vid,"input","container_input",data.files[i]); }
               if(type === "output"){ videoClickHandler(vid,"output","container_output",data.files[i]); }
@@ -386,33 +406,15 @@
       get_console("idtag");
       $("#render_final").show();
       $("#render_final_stop").hide();
-
-
-      /////// image preview
-      $('.popup-gallery').magnificPopup({
-        delegate: 'a',
-        type: 'image',
-        tLoading: 'Loading image #%curr%...',
-        mainClass: 'mfp-img-mobile',
-        gallery: {
-          enabled: true,
-          navigateByImgClick: true,
-          preload: [0,1] // Will preload 0 - before current, and 1 after the current image
-        },
-        image: {
-          tError: '<a href="%url%">The image #%curr%</a> could not be loaded.',
-          titleSrc: function(item) {
-            return item.el.attr('title'); //+ '<small>by Marsel Van Oosten</small>';
-          }
-        }
-      });
-
+      
       /////// click handlers
+
       // start renderer
       $("#render_final").click(function(event) {
         event.preventDefault(); 
         get_render();
-        // renderer feedback
+
+        // renderer feedback HACK
         clearInterval(renderInterval);
         renderInterval = setInterval(function(){ 
           get_console("idtag"); 
@@ -520,7 +522,6 @@
         makefolder("output");
       });
 
-
       // delete files
       $(".file_delete").click(function(event) {
         event.preventDefault();
@@ -536,7 +537,6 @@
         }
       });
 
-
       // var source = new EventSource("/stream");
       // source.onmessage = function(event) {
       //     document.getElementById("output_console").innerHTML += event.data + "<br/>"
@@ -549,191 +549,197 @@
   <body>
   
     <div id="container_site">
-        <br/>
-        <ul class="nav nav-tabs">
-          <li class="active"><a href="#"><strong>DeepDream UI</strong></a></li>
-          <li><a href="#">Jobs</a></li>
-<!--           <li><a href="#">Console</a></li>
- -->          <li><a href="#">Settings</a></li>
-        </ul>
-        <br/>
 
-        <div class="row">
-          
-          <div class="col-xs-4">
-            <h3 id="input_dir_display">
-              <span><a href="">Input</a></span> >
-              <span><a href="">Folder</a></span> >
-              <span id="input_amount">0 Images</span>
-            </h3>
-            <br/>
-            
-        
-            <button type="button" class="btn btn-default btn-sm" id="input_upload" onclick="$('#input_upload_selector').click();">
-              <span class="glyphicon glyphicon-upload" aria-hidden="true"></span> Upload
-            </button>
+      <br/>
+      <ul class="nav nav-tabs">
+        <li class="active"><a data-toggle="tab" href="#home"><strong>DeepDream UI</strong></a></a></li>
+        <li><a data-toggle="tab" href="#console">Console</a></li>
+        <li><a data-toggle="tab" href="#jobs">Jobs</a></li>
+      </ul>
+      <br/>
 
-            <button type="button" class="btn btn-default btn-sm file_delete">
-              <span class="glyphicon glyphicon-remove" aria-hidden="true"></span> Delete
-            </button>
+      <div class="tab-content">
+        <div id="console" class="tab-pane fade">
+          <button type="button" class="btn btn-default btn-sm" id="console_clear">
+            <span class="glyphicon glyphicon-sd-video" aria-hidden="true"></span> Clear Console
+          </button>
+          <br/><br/>
 
-            <button type="button" class="btn btn-default btn-sm" id="input_makefolder">
-              <span class="glyphicon glyphicon-folder-open" aria-hidden="true"></span> Make Folder
-            </button>
-
-            <button type="button" class="btn btn-default btn-sm" id="input_makemovie">
-              <span class="glyphicon glyphicon-facetime-video" aria-hidden="true"></span> Extract Movie
-            </button>
-
-            <form action="" method=post enctype=multipart/form-data>
-              <input id="input_upload_selector" name=file type="file" style="visibility:hidden" onchange="javascript:this.form.submit()" />
-            </form>
-
-             <div style="height:520px; width:100%; overflow:hidden; overflow-y:scroll; border:1px solid lightgray" id="container_input">
-              <div class="input_img" style="background-image:url(https://i.imgur.com/yjlwXsy.jpg)"></div>
-            </div>
-            
-          </div>
-
-
-          <div class="col-xs-4" >
-            <h3>Parameter
-            <div style="float:right;font-size:13px;color:lightgray">Unnamed Jobs</div>
-            </h3>
-            <br/>
-
-            <div class="form-group has-success has-feedback">
+          <textarea class="form-control" id="output_console" rows="28"></textarea> 
+        </div>
+        <div id="jobs" class="tab-pane fade">
+          <h3>Jobs</h3>
+          <p>Job #1</p>
+        </div>
+        <div id="home" class="tab-pane fade in active">
   
+          <div class="row">
+            
+            <div class="col-xs-4">
+              <h3 id="input_dir_display">
+                <span><a href="">Input</a></span> >
+                <span><a href="">Folder</a></span> >
+                <span id="input_amount">0 Images</span>
+              </h3>
+              <br/>
+              
+          
+              <button type="button" class="btn btn-default btn-sm" id="input_upload" onclick="$('#input_upload_selector').click();">
+                <span class="glyphicon glyphicon-upload" aria-hidden="true"></span> Upload
+              </button>
 
-                <button type="button" class="btn btn-success btn-sm" id="render_final">
-                  <span class="glyphicon glyphicon-hd-video" aria-hidden="true"></span> Start Render
-                </button>
+              <button type="button" class="btn btn-default btn-sm file_delete">
+                <span class="glyphicon glyphicon-remove" aria-hidden="true"></span> Delete
+              </button>
 
-                <button type="button" class="btn btn-danger btn-sm" id="render_final_stop">
-                  <span class="glyphicon glyphicon-hd-video" aria-hidden="true"></span> Stop Render
-                </button>
+              <button type="button" class="btn btn-default btn-sm" id="input_makefolder">
+                <span class="glyphicon glyphicon-folder-open" aria-hidden="true"></span> Make Folder
+              </button>
 
-                <button type="button" class="btn btn-default btn-sm" id="render_savejob">
-                  <span class="glyphicon glyphicon-sd-video" aria-hidden="true"></span> Save Job
-                </button>
-                
+              <button type="button" class="btn btn-default btn-sm" id="input_makemovie">
+                <span class="glyphicon glyphicon-facetime-video" aria-hidden="true"></span> Extract Movie
+              </button>
+
+              <form action="" method=post enctype=multipart/form-data>
+                <input id="input_upload_selector" name=file type="file" style="visibility:hidden" onchange="javascript:this.form.submit()" />
+              </form>
+
+               <div style="height:520px; width:100%; overflow:hidden; overflow-y:scroll; border:0px solid lightgray" id="container_input">
+                <div class="input_img" style="background-image:url(https://i.imgur.com/yjlwXsy.jpg)"></div>
+              </div>
+              
+            </div>
+
+
+            <div class="col-xs-4" >
+              <h3>Parameter
+              <div style="float:right;font-size:13px;color:lightgray">Unnamed Jobs</div>
+              </h3>
+              <br/>
+
+              <div class="form-group has-success has-feedback">
+    
+
+                  <button type="button" class="btn btn-success btn-sm" id="render_final">
+                    <span class="glyphicon glyphicon-hd-video" aria-hidden="true"></span> Start Render
+                  </button>
+
+                  <button type="button" class="btn btn-danger btn-sm" id="render_final_stop">
+                    <span class="glyphicon glyphicon-hd-video" aria-hidden="true"></span> Stop Render
+                  </button>
+
+                  <button type="button" class="btn btn-default btn-sm" id="render_savejob">
+                    <span class="glyphicon glyphicon-sd-video" aria-hidden="true"></span> Save Job
+                  </button>
+                  
+                <br/><br/>
+
+                <label class="control-label col-sm-3" for="inputSuccess3">Quality</label>
+
+                <div class="col-sm-9">
+                  <select class="form-control input-sm" id="params_presets">
+                    <option selected>High</option>
+                    <option>Medium</option>
+                    <option>Low</option>
+                  </select>
+                </div>
+
+                <label class="control-label col-sm-3" for="inputSuccess3">Network</label>
+                <div class="col-sm-9">
+                  <select class="form-control input-sm" id="params_network"></select>
+                </div>
+              
+                <label class="control-label col-sm-3" for="inputSuccess3">Layers</label>
+                <div class="col-sm-9">
+                  <input type="text" class="form-control input-sm" value="inception_4a/output" id="params_layers"/>
+                </div>
+
+                <label class="control-label col-sm-3" for="inputSuccess3">Octaves</label>
+                <div class="col-sm-9">
+                  <select class="form-control input-sm" id="params_octaves"></select>
+                </div>
+                <label class="control-label col-sm-3" for="inputSuccess3">Octavescale</label>
+                <div class="col-sm-9">
+                  <select class="form-control input-sm" id="params_octavescale"></select>
+                </div>
+                <label class="control-label col-sm-3" for="inputSuccess3">Iterations</label>
+                <div class="col-sm-9">
+                  <select class="form-control input-sm" id="params_iterations"></select>
+                </div>
+
+                <label class="control-label col-sm-3" for="inputSuccess3">Jitter</label>
+                <div class="col-sm-9">
+                  <select class="form-control input-sm" id="params_jitter"></select>
+                </div>
+
+                <label class="control-label col-sm-3" for="inputSuccess3">Stepsize</label>
+                <div class="col-sm-9">
+                  <select class="form-control input-sm" id="params_stepsize"></select>
+                </div>
+
+                <label class="control-label col-sm-3" for="inputSuccess3">Blend</label>
+                <div class="col-sm-9">
+                  <select class="form-control input-sm" id="params_blend"></select>
+                </div>
+
+                <label class="control-label col-sm-3" for="inputSuccess3">Opticalflow</label>
+                <div class="col-sm-9">
+                  <select class="form-control input-sm" id="params_opticalflow"></select>
+                </div>
+
+                <label class="control-label col-sm-3" for="inputSuccess3">Guide</label>
+                <div class="col-sm-9">
+                  <input type="text" class="form-control input-sm" value="" placeholder="url" id="params_guide" />
+                </div>
+
+
+                <label class="control-label col-sm-3" for="inputSuccess3">GPU</label>
+                <div class="col-sm-9">
+                  <select class="form-control input-sm" id="params_gpu"></select>
+                </div>
+
+              </div>
+            </div>
+
+            <div class="col-xs-4">
+              <h3 id="output_dir_display">
+                Output > 
+                <span id="output_amount">0 Images</span>
+              </h3>
+              <br/>
+              <button type="button" class="btn btn-default btn-sm" id="output_download">
+                <span class="glyphicon glyphicon-download" aria-hidden="true"></span> Download
+              </button>
+
+              <button type="button" class="btn btn-default btn-sm file_delete">
+                <span class="glyphicon glyphicon-remove" aria-hidden="true"></span> Delete
+              </button>
+
+              <button type="button" class="btn btn-default btn-sm" id="output_makefolder">
+                <span class="glyphicon glyphicon-folder-open" aria-hidden="true"></span> Make Folder
+              </button>
+
+              <button type="button" class="btn btn-default btn-sm" id="output_makemovie">
+                <span class="glyphicon glyphicon-facetime-video" aria-hidden="true"></span> Make Movie
+              </button>
+
               <br/><br/>
 
-              <label class="control-label col-sm-3" for="inputSuccess3">Quality</label>
-
-              <div class="col-sm-9">
-                <select class="form-control input-sm" id="params_presets">
-                  <option selected>High</option>
-                  <option>Medium</option>
-                  <option>Low</option>
-                </select>
+               <div style="height:520px; width:100%; overflow:hidden; overflow-y:scroll;border:0px solid lightgray" id="container_output">
+                <div class="input_img" style="background-image:url(http://venturebeat.com/wp-content/uploads/2015/07/deepdream-2.jpeg)"></div>
               </div>
+              <div class="popup-gallery" style='display: none;'></div>
 
-              <label class="control-label col-sm-3" for="inputSuccess3">Network</label>
-              <div class="col-sm-9">
-                <select class="form-control input-sm" id="params_network"></select>
               </div>
             
-              <label class="control-label col-sm-3" for="inputSuccess3">Layers</label>
-              <div class="col-sm-9">
-                <input type="text" class="form-control input-sm" value="inception_4a/output" id="params_layers"/>
-              </div>
-
-              <label class="control-label col-sm-3" for="inputSuccess3">Octaves</label>
-              <div class="col-sm-9">
-                <select class="form-control input-sm" id="params_octaves"></select>
-              </div>
-              <label class="control-label col-sm-3" for="inputSuccess3">Octavescale</label>
-              <div class="col-sm-9">
-                <select class="form-control input-sm" id="params_octavescale"></select>
-              </div>
-              <label class="control-label col-sm-3" for="inputSuccess3">Iterations</label>
-              <div class="col-sm-9">
-                <select class="form-control input-sm" id="params_iterations"></select>
-              </div>
-
-              <label class="control-label col-sm-3" for="inputSuccess3">Jitter</label>
-              <div class="col-sm-9">
-                <select class="form-control input-sm" id="params_jitter"></select>
-              </div>
-
-              <label class="control-label col-sm-3" for="inputSuccess3">Stepsize</label>
-              <div class="col-sm-9">
-                <select class="form-control input-sm" id="params_stepsize"></select>
-              </div>
-
-              <label class="control-label col-sm-3" for="inputSuccess3">Blend</label>
-              <div class="col-sm-9">
-                <select class="form-control input-sm" id="params_blend"></select>
-              </div>
-
-              <label class="control-label col-sm-3" for="inputSuccess3">Opticalflow</label>
-              <div class="col-sm-9">
-                <select class="form-control input-sm" id="params_opticalflow"></select>
-              </div>
-
-              <label class="control-label col-sm-3" for="inputSuccess3">Guide</label>
-              <div class="col-sm-9">
-                <input type="text" class="form-control input-sm" value="" placeholder="url" id="params_guide" />
-              </div>
-
-
-              <label class="control-label col-sm-3" for="inputSuccess3">GPU</label>
-              <div class="col-sm-9">
-                <select class="form-control input-sm" id="params_gpu"></select>
-              </div>
-
-              
 
             </div>
-          </div>
 
-          <div class="col-xs-4">
-            <h3 id="output_dir_display">
-              Output > 
-              <span id="output_amount">0 Images</span>
-            </h3>
-            <br/>
-
-           
-            <button type="button" class="btn btn-default btn-sm" id="output_download">
-              <span class="glyphicon glyphicon-download" aria-hidden="true"></span> Download
-            </button>
-
-            <button type="button" class="btn btn-default btn-sm file_delete">
-              <span class="glyphicon glyphicon-remove" aria-hidden="true"></span> Delete
-            </button>
-
-            <button type="button" class="btn btn-default btn-sm" id="output_makefolder">
-              <span class="glyphicon glyphicon-folder-open" aria-hidden="true"></span> Make Folder
-            </button>
-
-            <button type="button" class="btn btn-default btn-sm" id="output_makemovie">
-              <span class="glyphicon glyphicon-facetime-video" aria-hidden="true"></span> Make Movie
-            </button>
-
-            <br/><br/>
-
-             <div style="height:520px; width:100%; overflow:hidden; overflow-y:scroll;border:1px solid lightgray" id="container_output">
-              <div class="input_img" style="background-image:url(http://venturebeat.com/wp-content/uploads/2015/07/deepdream-2.jpeg)"></div>
-            </div>
-            <div class="popup-gallery" style='display: none;'></div>
-
-            </div>
-          
 
           </div>
-
-
+         </div>
         </div>
-        <br/>
-        <h2>Console</h2>
-        <h4>Clear Console</h4>
-        <textarea class="form-control" id="output_console" rows="20"></textarea> 
-        <br/><br/> 
-        
 
-     
     </div>
   </body>
 </html>
