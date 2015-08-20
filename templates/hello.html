@@ -10,7 +10,7 @@
     <script src="static/js/buzz.min.js"></script>
     <script src='static/js/nprogress.js'></script>
     <script src="static/js/bootstrap.min.js"></script>
-    <script src="https://raw.githubusercontent.com/dimsemenov/Magnific-Popup/master/dist/jquery.magnific-popup.js"></script>
+    <script src="static/js/jquery.magnific-popup.js"></script>
 
     <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
     <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
@@ -83,7 +83,7 @@
           var index = selectedFiles.indexOf(file);
           selectedFiles.splice(index, 1);
         }
-        console.log(selectedFiles);
+        //console.log(selectedFiles);
       }
 
       // directory click handler
@@ -103,75 +103,29 @@
         }   
       }
 
-      function popupimage(file) {
-        /*$.magnificPopup.open({
-          items: {
-            src: obj,
-            type: 'image'
-          }
-        });*/
-        //var nr = $('#container_output').find('.frame').length;
-        //$('.popup-gallery').magnificPopup('open'); // Will open the popup
-        $('#container_output').find('.frame').each(function( index, value ) {
-          console.log($(this));
-          console.log( $(this).attr('src'), file);
+      function popupimage(file,container,image) {
+        $('.popup-gallery').html('');
 
-          if( $(this).attr('src').indexOf(file) > -1 )
-            $('.popup-gallery').magnificPopup('open', index); // Will open popup with 5th item
+        $(container).find(image).each(function( index, value ) {
+          $('.popup-gallery').append('<a href="'+value.src+'" title="'+value.title+'"><img src="'+value.src+'" height="75" width="75"></a>');
         });
-        
-        
-        //$('.element-with-popup').magnificPopup('next');
-        //$('.element-with-popup').magnificPopup('goTo', 3);
 
-      }
-      function imageClickHandler(obj,type,container,file,doublclick){
-
-        if(doublclick) {
-
-         $('.popup-gallery').magnificPopup({
-            delegate: 'a',
-            type: 'image',
-            tLoading: 'Loading image #%curr%...',
-            mainClass: 'mfp-img-mobile',
-            gallery: {
-              enabled: true,
-              navigateByImgClick: true,
-              preload: [0,1] // Will preload 0 - before current, and 1 after the current image
-            },
-            image: {
-              tError: '<a href="%url%">The image #%curr%</a> could not be loaded.',
-              titleSrc: function(item) {
-                return item.el.attr('title'); //+ '<small>by Marsel Van Oosten</small>';
-              }
-            }
-          });
-
-
-          /*$('.popup-gallery').magnificPopup({
-            type: 'image',
-            tLoading: 'Loading image #%curr%...',
-            mainClass: 'mfp-img-mobile',
-            gallery: {
-              enabled: true,
-              navigateByImgClick: true,
-              preload: [0,1] // Will preload 0 - before current, and 1 after the current image
-            }
-          });*/
-          
-          if(type === "input"){ 
-            $(obj).click(function(){ imageselector($(this),file); }).dblclick(function(){ popupimage(file); }).appendTo("#"+container);
-
+        $(container).find(image).each(function( index, value ) {
+          if(file === value.title){
+            $('.popup-gallery').magnificPopup('open', index); // Will open popup with 5th item
           }
-          if(type === "output"){ 
-            $(obj).click(function(){ imageselector($(this),file); }).dblclick(function(){ popupimage(file); }).appendTo("#"+container);
-          }   
+        });
+      }
 
-        } else {
-          if(type === "input"){ $(obj).click(function(){ imageselector($(this),file); }).appendTo("#"+container);}
-          if(type === "output"){ $(obj).click(function(){ imageselector($(this),file); }).appendTo("#"+container);}   
+      function imageClickHandler(obj,type,container,file){       
+
+        // click/doubleclick handler
+        if(type === "input"){ 
+          $(obj).click(function(){ imageselector($(this),file); }).dblclick(function(){ popupimage(file,'#container_input','.frame_input'); }).appendTo("#"+container);
         }
-       
+        if(type === "output"){ 
+          $(obj).click(function(){ imageselector($(this),file); }).dblclick(function(){ popupimage(file,'#container_output','.frame_output'); }).appendTo("#"+container);
+        }        
       }
 
       function videoClickHandler(obj,type,container,file){
@@ -232,16 +186,14 @@
               var timestamp = new Date().getTime();
 
               foundimgcount++;
-              var newimg ='<div class="input_img_container"><img title="'+data.files[i]+'" class="input_img frame" src="'+ data.files[i] +'?'+timestamp+' " /></div';
-              if(type === "input"){ imageClickHandler(newimg,"input","container_input",data.files[i]); }
+
+              if(type === "input"){ 
+                var newimg ='<div class="input_img_container"><img title="'+data.files[i]+'" class="input_img frame_input" src="'+ data.files[i] +'?'+timestamp+' " /></div';
+                imageClickHandler(newimg,"input","container_input",data.files[i]); }
               if(type === "output"){ 
-                imageClickHandler(newimg,"output","container_output",data.files[i]);
-
-                $('.popup-gallery').append('<a href="'+data.files[i]+'" title="'+data.files[i]+'"><img src="'+data.files[i]+'" height="75" width="75"></a>');
+                var newimg ='<div class="input_img_container"><img title="'+data.files[i]+'" class="input_img frame_output" src="'+ data.files[i] +'?'+timestamp+' " /></div';
+                imageClickHandler(newimg,"output","container_output",data.files[i]); 
               }
-
-              if(type === "input"){ imageClickHandler(newimg,"input","container_input",data.files[i],true); }
-              if(type === "output"){ imageClickHandler(newimg,"output","container_output",data.files[i],true); }
             }
           }
 
@@ -435,6 +387,25 @@
       $("#render_final").show();
       $("#render_final_stop").hide();
 
+
+      /////// image preview
+      $('.popup-gallery').magnificPopup({
+        delegate: 'a',
+        type: 'image',
+        tLoading: 'Loading image #%curr%...',
+        mainClass: 'mfp-img-mobile',
+        gallery: {
+          enabled: true,
+          navigateByImgClick: true,
+          preload: [0,1] // Will preload 0 - before current, and 1 after the current image
+        },
+        image: {
+          tError: '<a href="%url%">The image #%curr%</a> could not be loaded.',
+          titleSrc: function(item) {
+            return item.el.attr('title'); //+ '<small>by Marsel Van Oosten</small>';
+          }
+        }
+      });
 
       /////// click handlers
       // start renderer

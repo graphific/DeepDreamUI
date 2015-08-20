@@ -28,7 +28,7 @@ import argparse
 reload(sys)
 sys.setdefaultencoding("utf-8")
 
-UPLOAD_FOLDER = '/home/roelof/CODE/DeepDreamUi/static/input'
+UPLOAD_FOLDER = '/Users/samim/sites/DeepDreamUi/static/input'
 ALLOWED_EXTENSIONS = set(['mov', 'mp4', 'png', 'jpg', 'jpeg', 'gif'])
 
 app = Flask(__name__)
@@ -216,7 +216,7 @@ def upload_file():
 # Start Flask App
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='DeepDreamUI')
-    parser.add_argument('--port', '-p', default='10', type=int)
+    parser.add_argument('--port', '-p', default='5000', type=int)
 
     args = parser.parse_args()
 
