@@ -115,7 +115,7 @@ def writeToLog(msg):
 	print msg
 	filename = 'static/render.log'
 	with open(filename,'ab') as f: f.write(msg)
-
+        
 
 def main(inputdir, outputdir, preview, octaves, octave_scale, iterations, jitter, zoom, stepsize, blend, layers, guide,
          gpu, flow):
@@ -161,7 +161,6 @@ def main(inputdir, outputdir, preview, octaves, octave_scale, iterations, jitter
                            channel_swap=(2, 1, 0))  # the reference model has channels in BGR order instead of RGB
 
     
-
     # load images & sort them
     vidinput = os.listdir(inputdir)
     vidinput.sort()
@@ -353,9 +352,11 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    print args
-    writeToLog(args.input + '\n')
-    
+    # clear log
+    with open('static/render.log','w') as f: f.write("")
+    writeToLog("DeepDream Start" + '\n'+ '\n')
+
+    # parse args
     if args.extract is 1:
         extractVideo(args.input, args.output)
     elif args.create is 1:

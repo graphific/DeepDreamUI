@@ -25,6 +25,14 @@ hr{
   margin-bottom: 15px;
 }
 
+td{
+  padding: 10px;
+}
+
+tr{
+  margin:5px;
+  border-bottom: 1px solid lightgray
+}
 
 .data_img{
   cursor: pointer;

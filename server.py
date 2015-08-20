@@ -23,6 +23,7 @@ from os import path
 import subprocess
 
 import argparse
+import datetime
 
 
 reload(sys)
@@ -73,16 +74,8 @@ def api_render():
 
     print "DeepDream Start"
     command = 'python dreamer.py --preview '+str(preview)+' --input '+str(inputdir)+' --output '+str(outputdir)+' --octaves '+str(octaves)+' --octavescale '+str(octavescale)+' --iterations '+str(itterations)+' --jitter '+str(jitter)+' --stepsize '+str(stepsize)+' --blend '+str(blend)+' --layers '+str(layers)+' --gpu '+str(gpu)+' --flow '+str(opticalflow)+' '+finalguide+''
-    #return subprocess.call(command, shell=True)
-    #return subprocess.Popen(command, shell=True)
-
-   # newproc = subprocess.Popen(command, stdout=subprocess.PIPE, 
-    #                   shell=True, preexec_fn=os.setsid) 
-
-    newproc = subprocess.Popen("exec " + command, stdout=subprocess.PIPE, shell=True)
-
-
-    return newproc
+    subprocess.Popen("exec " + command, stdout=subprocess.PIPE, shell=True)
+    return 'running'
 
 # Stop deepdream renderer
 @app.route('/api/v1.0/stoprender', methods=['POST'])
@@ -153,16 +146,9 @@ def api_extractmovie():
     print "Start Extracting Frames"
     command = 'python dreamer.py --input '+str(mfile)+' --output '+str(mdir)+' --extract 1'
     print command
-    #return subprocess.call(command, shell=True)
-    #return subprocess.Popen(command, shell=True)
 
-   # newproc = subprocess.Popen(command, stdout=subprocess.PIPE, 
-    #                   shell=True, preexec_fn=os.setsid) 
-
-    newproc = subprocess.Popen("exec " + command, stdout=subprocess.PIPE, shell=True)
-
-
-    return newproc
+    subprocess.Popen("exec " + command, stdout=subprocess.PIPE, shell=True)
+    return 'createmovie'
 
 
 # Create new directory
@@ -178,6 +164,40 @@ def api_makefolder():
 
     return jsonify({'output': response}), 201
 
+
+# Create new job
+@app.route('/api/v1.0/makejob', methods=['POST'])
+def api_makejob():
+    if not request.json or not 'job' in request.json:
+        abort(400)
+
+    newjob = request.json['job']
+    newjobtitle = newjob['jobname']
+    date = str(time.time())
+
+    filename = 'static/jobs/'+newjobtitle+'_'+date+'.json'
+
+    with open(filename, 'w+') as outfile:
+        json.dump(newjob, outfile)
+
+    response = "job created: " + filename
+    return jsonify({'output': response}), 201
+
+# Show console
+@app.route('/api/v1.0/getjobs', methods=['POST'])
+def api_getjobs():
+    foundfile = []
+    jobspath = 'static/jobs/'
+
+    # found files
+    for path, subdirs, files in os.walk(jobspath):
+        for name in files:
+            found = os.path.join(path, name)
+            foundfile.append(found)
+        break
+
+    return jsonify({'root': jobspath, 'files': foundfile}), 201
+ 
 
 # Delete Files/Folders
 @app.route('/api/v1.0/delete', methods=['POST'])
