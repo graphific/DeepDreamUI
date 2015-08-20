@@ -29,7 +29,23 @@ import datetime
 reload(sys)
 sys.setdefaultencoding("utf-8")
 
-UPLOAD_FOLDER = '/Users/samim/sites/DeepDreamUi/static/input'
+import yaml
+
+with open("config.yml", 'r') as ymlfile:
+    cfg = yaml.load(ymlfile)
+
+rootfolder = ''
+default_port = 5000
+if 'local' in cfg:
+    loc = cfg['local']
+    print loc
+    if 'folder' in loc:
+        rootfolder = loc['folder']
+    if 'default_port' in loc:
+        default_port = loc['default_port']
+    
+
+UPLOAD_FOLDER = rootfolder+'static/input'
 ALLOWED_EXTENSIONS = set(['mov', 'mp4', 'png', 'jpg', 'jpeg', 'gif'])
 
 app = Flask(__name__)
@@ -39,6 +55,8 @@ app.config['CORS_HEADERS'] = 'Content-Type'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 
+
+    
 @app.route('/')
 def index(text_input= "", text_output= ""):
     return render_template('hello.html', text_input="", text_output="")
@@ -236,7 +254,7 @@ def upload_file():
 # Start Flask App
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='DeepDreamUI')
-    parser.add_argument('--port', '-p', default='5000', type=int)
+    parser.add_argument('--port', '-p', default=default_port, type=int)
 
     args = parser.parse_args()
 
