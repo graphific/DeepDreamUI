@@ -62,11 +62,13 @@ def index(text_input= "", text_output= ""):
     return render_template('hello.html', text_input="", text_output="")
 
 
-newproc = 0
+newproc = None
 
 # Start deepdream renderer
 @app.route('/api/v1.0/getrender', methods=['POST'])
 def api_render():
+    global newproc
+
     presets = request.json['presets'] #low, medium, high
     network = request.json['network'] 
     layers = request.json['layers']
@@ -92,16 +94,15 @@ def api_render():
 
     print "DeepDream Start"
     command = 'python dreamer.py --preview '+str(preview)+' --input '+str(inputdir)+' --output '+str(outputdir)+' --octaves '+str(octaves)+' --octavescale '+str(octavescale)+' --iterations '+str(itterations)+' --jitter '+str(jitter)+' --stepsize '+str(stepsize)+' --blend '+str(blend)+' --layers '+str(layers)+' --gpu '+str(gpu)+' --flow '+str(opticalflow)+' '+finalguide+''
-    subprocess.Popen("exec " + command, stdout=subprocess.PIPE, shell=True)
+    newproc = subprocess.Popen("exec " + command, stdout=subprocess.PIPE, shell=True)
     return 'running'
 
 # Stop deepdream renderer
 @app.route('/api/v1.0/stoprender', methods=['POST'])
 def api_renderstop():
     print "DeepDream KILL"
-    subprocess.Popen.kill(newproc)
-    os.killpg(newproc.pid, signal.SIGTERM)  # Send the signal to all the process groups
     newproc.kill()
+    newproc.terminate();
     return 'killed'
 
 # Show console

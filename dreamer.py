@@ -354,7 +354,6 @@ if __name__ == "__main__":
 
     # clear log
     with open('static/render.log','w') as f: f.write("")
-    writeToLog("DeepDream Start" + '\n'+ '\n')
 
     # parse args
     if args.extract is 1:
