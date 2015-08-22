@@ -168,6 +168,24 @@ def api_extractmovie():
     subprocess.Popen("exec " + command, stdout=subprocess.PIPE, shell=True)
     return 'createmovie'
 
+# make movie from frames
+@app.route('/api/v1.0/makemovie', methods=['POST'])
+def api_makemovie():
+    print "api_makemovie()"
+    print request.json
+    if not request.json or not 'movie' in request.json or not 'directory' in request.json:
+        abort(400)
+
+    mfile = request.json['movie']
+    mdir = request.json['directory'] 
+    print mfile
+
+    print "Start Creating Movie"
+    command = 'python dreamer.py --framerate 25 --input '+str(mfile)+' --output '+str(mdir) + ' --create 1 '
+    print command
+
+    subprocess.Popen("exec " + command, stdout=subprocess.PIPE, shell=True)
+    return 'createmovie'
 
 # Create new directory
 @app.route('/api/v1.0/makefolder', methods=['POST'])

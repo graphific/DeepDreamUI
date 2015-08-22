@@ -123,7 +123,12 @@ tr{
 }
 #input_dir_display{
   -moz-user-select: none;
--webkit-user-select: none;
-user-select: none;
+  -webkit-user-select: none;
+  user-select: none;
+  
+}
+
+.dir_display{
+  height: 20px;
 }
 

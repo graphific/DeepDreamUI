@@ -554,6 +554,28 @@ $(function() {
       dataType: "json"
     });
   }
+  function makemovie(file,dir) {
+    $.ajax({
+      type: "POST",
+      contentType: "application/json; charset=utf-8",
+      url: "/api/v1.0/makemovie",
+      data: JSON.stringify({movie:file,directory:dir}),
+      success: function (data) {
+        console.log("movie created: " + file);
+        get_directory(params_view.params.input,"input",0,0);
+        get_directory(params_view.params.output,"output",0,0);
+        alert("Movie Creation Done");
+      },
+      dataType: "json"
+    });
+  }
+
+  //extract movie
+  $("#output_makemovie").click(function(event) {
+    event.preventDefault();
+    var moviename = prompt("Movie Name", "");
+    makemovie(params_view.params.output,params_view.params.output + '/' + moviename + '.mp4');
+  });
 
   //extract movie
   $("#input_makemovie").click(function(event) {
