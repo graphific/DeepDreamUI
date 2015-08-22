@@ -22,7 +22,7 @@
 
     <link rel="stylesheet" href="static/css/main.css"> 
     
-    <link href='//fonts.googleapis.com/css?family=Open+Sans:400,300,600,700,800' rel='stylesheet' type='text/css'>
+    <link href='http://fonts.googleapis.com/css?family=Roboto:400,100,300,500,700,900' rel='stylesheet' type='text/css'>
     <link href="data:image/x-icon;base64,AAABAAEAEBAQAAEABAAoAQAAFgAAACgAAAAQAAAAIAAAAAEABAAAAAAAgAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAJ6TrAFy+8QCC0vgA7+/vAC6n7ACE0/gAS2RuAKbU5QDAwMAAv+3+ACek6gApoeYAAAAAAAAAAAAAAAAARERERERERABEREREREREAEREREREREQAREREeIRERABJmZSohUREAERERKolVEQAREREozUVRABJmZRDNlFUAEREREQzZRUAREREREM2W1BJmZmZRDNlxUREREREQzZVREREREREMzVJmZmZmURDM0REREREREQzRERERERERAMAAwAAAAMAAAADAAAAAwAAAAMAAAADAAAAAwAAAAMAAAADAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgAA" rel="icon" type="image/x-icon" />
   </head>
 
@@ -51,12 +51,14 @@
           <div class="input-group">
             <input type="text" class="form-control" placeholder="S3 Key" aria-describedby="basic-addon2">
           </div>
-          <br/>
           Amazon S3 Secret
           <div class="input-group">
             <input type="text" class="form-control" placeholder="S3 Secret" aria-describedby="basic-addon2">
           </div>
           <br/>
+          <button type="button" class="btn btn-default btn-sm" id="input_upload" onclick="$('#input_upload_selector').click();">
+            <span class="glyphicon glyphicon-upload" aria-hidden="true"></span> Sync Data
+          </button>
         </div>
 
         <div id="console" class="tab-pane fade">

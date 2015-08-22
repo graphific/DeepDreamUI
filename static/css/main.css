@@ -1,5 +1,5 @@
 body{
-  font-family: 'Open Sans', sans-serif;
+  font-family: 'Roboto', sans-serif;
   font-size:14px;
   line-height: 22px;
   margin:0px;
@@ -42,7 +42,21 @@ tr{
   -webkit-user-select: none;
   user-select: none;
 }
-
+.loadmore{
+  background-color:#f1f1f1; 
+  text-align:center; 
+  padding-top:10px; 
+  margin-top:5px; 
+  height:45px;
+  width:100%;
+  font-weight: 600;
+}
+.loadmore:hover{
+  background-color:lightgray;
+}
+.loadmore:active{
+  background-color:orange;
+}
 .data_img_text{
   position: absolute;
   margin-top: -42px;

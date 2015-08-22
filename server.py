@@ -174,8 +174,8 @@ def api_extractmovie():
 def api_makefolder():
     if not request.json or not 'id' in request.json:
         abort(400)
-    foldername = request.json['id'] 
-
+    foldername = request.json['id']
+    print(foldername);
 
     command = 'mkdir ' + foldername
     response = subprocess.call(command, shell=True)

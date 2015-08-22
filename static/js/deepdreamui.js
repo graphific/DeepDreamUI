@@ -26,14 +26,15 @@ var params_view = {
   }
 };
 var selectedFiles = [];
+var maxImageView = 200;
 
 // list directories & files
-function get_directory(id,type) {  
-  console.log("get_directory: dir: " + id + " type: " + type);
+function get_directory(id,type,startimage,append) {  
+  console.log("get_directory: dir: " + id + " type: " + type +  " startimage: " + startimage + " append: " + append);
 
   // check if file is image
   function checkURLImg(url) { return(url.match(/\.(jpeg|jpg|png)$/) != null); }
-  function checkURLVid(url) { return(url.match(/\.(mp4|mov)$/) != null); }
+  function checkURLVid(url) { return(url.match(/\.(mp4|mov|avi)$/) != null); }
   
   // capitalize First Letter
   function capitalizeFirstLetter(string) { return string.charAt(0).toUpperCase() + string.slice(1);}
@@ -59,16 +60,16 @@ function get_directory(id,type) {
   function directoryClickHandler(obj,dir,type,container,doublclick){
     if(doublclick){
       if(type === "input"){ 
-        $(obj).click(function(){ imageselector($(this),dir); }).dblclick(function(){ get_directory(dir,type); }).appendTo("#"+container);
+        $(obj).click(function(){ imageselector($(this),dir); }).dblclick(function(){ get_directory(dir,type,0,0); }).appendTo("#"+container);
 
       }
       if(type === "output"){ 
-        $(obj).click(function(){ imageselector($(this),dir); }).dblclick(function(){ get_directory(dir,type); }).appendTo("#"+container);
+        $(obj).click(function(){ imageselector($(this),dir); }).dblclick(function(){ get_directory(dir,type,0,0); }).appendTo("#"+container);
       }   
     }
     else{
-      if(type === "input"){ $(obj).click(function(){ get_directory(dir,type); }).appendTo("#"+container);}
-      if(type === "output"){ $(obj).click(function(){ get_directory(dir,type); }).appendTo("#"+container);}   
+      if(type === "input"){ $(obj).click(function(){ get_directory(dir,type,0,0); }).appendTo("#"+container);}
+      if(type === "output"){ $(obj).click(function(){ get_directory(dir,type,0,0); }).appendTo("#"+container);}   
     }   
   }
 
@@ -106,7 +107,7 @@ function get_directory(id,type) {
     });
   }
 
-  function imageClickHandler(obj,type,container,file){       
+  function imageClickHandler(obj,type,container,file,amount){       
 
     // click/doubleclick handler
     if(type === "input"){ 
@@ -124,13 +125,18 @@ function get_directory(id,type) {
   
   // clear divs
   if(type === "input"){
-    $("#container_input").html("");
-    $("#input_dir_display").html("");
+  	if(append === 0){
+    	$("#container_input").html("");
+    	$("#input_dir_display").html("");
+    }
+    
     params_view.params.input = id;
   }
   if(type === "output"){
-    $("#container_output").html("");
-    $("#output_dir_display").html("");
+  	if(append === 0){
+    	$("#container_output").html("");
+    	$("#output_dir_display").html("");
+    }
     params_view.params.output = id;
   }
 
@@ -148,43 +154,74 @@ function get_directory(id,type) {
     url: "/api/v1.0/getdirectory",
     data: JSON.stringify({id:id, type:type}),
     success: function (data) {
-    
-      // append directories
-      for(var i=0; i<data.dirs.length;i++){
-        var dir ='<div class="input_img_container data_img"><img title="'+data.dirs[i]+'" class="input_img" src="static/img/folder.png" /><div class="data_img_text">'+directoryTextDisplay(data.dirs[i])+'</div></div>';
-        if(type === "input"){ directoryClickHandler(dir,data.dirs[i],"input","container_input",true); }
-        if(type === "output"){ directoryClickHandler(dir,data.dirs[i],"output","container_output",true); }
-      }
+    	
+      if(append === 0){
+	      // append directories
+	      for(var i=0; i<data.dirs.length;i++){
+	        var dir ='<div class="input_img_container data_img"><img title="'+data.dirs[i]+'" class="input_img" src="static/img/folder.png" /><div class="data_img_text">'+directoryTextDisplay(data.dirs[i])+'</div></div>';
+	        if(type === "input"){ directoryClickHandler(dir,data.dirs[i],"input","container_input",true); }
+	        if(type === "output"){ directoryClickHandler(dir,data.dirs[i],"output","container_output",true); }
+	      }
+	  }
 
-      // append video
-      for(var i=0; i<data.files.length;i++){
-        if(checkURLVid(data.files[i])){
-          var vid ='<div class="input_img_container data_img"><img title="'+data.files[i]+'" class="input_img" src="static/img/video.png" /><div class="data_img_text">'+directoryTextDisplay(data.files[i])+'</div></div>';
+      // append videos
+      if(append === 0){
+	      for(var i=0; i < data.files.length; i++){
+	      	// is video
+	        if(checkURLVid(data.files[i])){
+	          var vid ='<div class="input_img_container data_img"><img title="'+data.files[i]+'" class="input_img" src="static/img/video.png" /><div class="data_img_text">'+directoryTextDisplay(data.files[i])+'</div></div>';
 
-          if(type === "input"){ videoClickHandler(vid,"input","container_input",data.files[i]); }
-          if(type === "output"){ videoClickHandler(vid,"output","container_output",data.files[i]); }
-        }
-      }
+	          if(type === "input"){ videoClickHandler(vid,"input","container_input",data.files[i]); }
+	          if(type === "output"){ videoClickHandler(vid,"output","container_output",data.files[i]); }
+	        }
+	      }
+	   }
 
-      var foundimgcount = 0;
+	   // append images
       $('.popup-gallery').html('');
-      // append images
-      for(var i=0; i<data.files.length;i++){
+      var vidAmount = data.files.length;
+      var foundimgcount = data.files.length;
+      vidAmount = maxImageView;
+      vidStart = startimage;
 
+      var check = vidStart+vidAmount;
+      if(check >= data.files.length){check = data.files.length;}
+      
+      console.log("vidStart: " + vidStart + " vidAmount: " + vidAmount + " data.files.length: " + data.files.length);
+ 
+      for(var i=vidStart; i < check; i++){
+ 	
+     	// is image
         if(checkURLImg(data.files[i])){
           var timestamp = new Date().getTime();
 
-          foundimgcount++;
-
           if(type === "input"){ 
             var newimg ='<div class="input_img_container"><img title="'+data.files[i]+'" class="input_img frame_input" src="'+ data.files[i] +'?'+timestamp+' " /></div';
-            imageClickHandler(newimg,"input","container_input",data.files[i]); }
+            imageClickHandler(newimg,"input","container_input",data.files[i]) }
           if(type === "output"){ 
             var newimg ='<div class="input_img_container"><img title="'+data.files[i]+'" class="input_img frame_output" src="'+ data.files[i] +'?'+timestamp+' " /></div';
             imageClickHandler(newimg,"output","container_output",data.files[i]); 
           }
         }
       }
+
+      // load more button
+      if(check < data.files.length){
+	      if(type === "input"){ 
+	      	$('<div class="data_img loadmore">LOAD MORE</div>').click(function(){ 
+	      		vidStart+=maxImageView;
+	      		get_directory(params_view.params.input,"input",vidStart,1); 
+	      		this.remove();
+	      	}).appendTo("#container_input");
+	      }
+	      else if(type === "output"){ 
+	      	$('<div class="data_img loadmore">LOAD MORE</div>').click(function(){ 
+	      		vidStart+=maxImageView;
+	      		get_directory(params_view.params.output,"output",vidStart,1); 
+	      		this.remove();
+	      	}).appendTo("#container_output");
+	      }
+	  }
 
       // directory path display tool
       function directoryDisplay(container, amount, dirdisplay,type){
@@ -219,8 +256,11 @@ function get_directory(id,type) {
       }
 
       // display directories & path info
-      if(type === "input"){ directoryDisplay("container_input","input_amount","input_dir_display","input"); }
-      if(type === "output"){ directoryDisplay("container_output","output_amount","output_dir_display","output"); }
+      if(append === 0){
+      	if(type === "input"){ directoryDisplay("container_input","input_amount","input_dir_display","input"); }
+      	if(type === "output"){ directoryDisplay("container_output","output_amount","output_dir_display","output"); }
+      }
+
     },
     dataType: "json"
   });
@@ -396,15 +436,21 @@ var renderInterval;
 
 $(function() {
   setupForm();
-  get_directory("static/input/","input");
-  get_directory("static/output/","output");
+  get_directory("static/input/","input",0,0);
+  get_directory("static/output/","output",0,0);
   get_console("idtag");
+  get_jobs();
   $("#render_final").show();
   $("#render_final_stop").hide();
 
 
-  get_jobs();
-  
+  // var test = 0;
+  // setInterval(function(){
+  // 	test+=10;
+  // 	get_directory("static/input/","input",test,1);
+  // 	//get_directory("static/output/","output",test);
+  // },3000);
+
   /////// click handlers
 
   // start renderer
@@ -419,7 +465,7 @@ $(function() {
       setTimeout(function(){
         var textarea = document.getElementById('output_console');
         textarea.scrollTop = textarea.scrollHeight + 100;  
-        get_directory(params_view.params.output,"output");
+        get_directory(params_view.params.output,"output",0,0);
       },200);
     },5000);
   });
@@ -430,7 +476,7 @@ $(function() {
     stop_render();
     clearInterval(renderInterval);
     renderInterval = null;
-    get_directory(params_view.params.output,"output");
+    get_directory(params_view.params.output,"output",0,0);
   });
 
   // save render job
@@ -459,8 +505,8 @@ $(function() {
     var foldername = prompt("Enter Folder Name", "");
     if (foldername != null) {
       var finalfoldername;
-      if(type === "input"){finalfoldername = params_view.params.input + foldername;}
-      if(type === "output"){finalfoldername = params_view.params.output + foldername;}
+      if(type === "input"){finalfoldername = params_view.params.input + '/' + foldername;}
+      if(type === "output"){finalfoldername = params_view.params.output + '/' + foldername;}
       
       $.ajax({
         type: "POST",
@@ -469,8 +515,8 @@ $(function() {
         data: JSON.stringify({id:finalfoldername}),
         success: function (data) {
           console.log("folder created: " + finalfoldername);
-          if(type === "input"){get_directory(params_view.params.input,type);}
-          if(type === "output"){get_directory(params_view.params.output,type);}
+          if(type === "input"){get_directory(params_view.params.input,type,0,0);}
+          if(type === "output"){get_directory(params_view.params.output,type,0,0);}
         },
         dataType: "json"
       });
@@ -485,8 +531,8 @@ $(function() {
       data: JSON.stringify({id:file}),
       success: function (data) {
         console.log("files deleted: " + file);
-        get_directory(params_view.params.input,"input");
-        get_directory(params_view.params.output,"output");
+        get_directory(params_view.params.input,"input",0,0);
+        get_directory(params_view.params.output,"output",0,0);
       },
       dataType: "json"
     });
@@ -501,8 +547,9 @@ $(function() {
       data: JSON.stringify({movie:file,directory:dir}),
       success: function (data) {
         console.log("frames extracted from: " + file);
-        get_directory(params_view.params.input,"input");
-        get_directory(params_view.params.output,"output");
+        get_directory(params_view.params.input,"input",0,0);
+        get_directory(params_view.params.output,"output",0,0);
+        alert("Movie Extraction done");
       },
       dataType: "json"
     });
@@ -514,20 +561,17 @@ $(function() {
 
     inputitems = []
     selectedFiles.map( function(item) {
-      //alert(item);
-      if(item.indexOf("static/input/") > -1 && ( item.indexOf(".mp4") > -1 || item.indexOf(".avi") > -1 ) ) 
-        inputitems.push(item);
+      	if(item.indexOf("static/input/") > -1 && ( item.indexOf(".mp4") > -1 || item.indexOf(".avi") > -1 || item.indexOf(".mov") > -1 ) ){
+        	inputitems.push(item);
+    	}
     })
     if(inputitems.length > 1)
-      alert('please select only one movie at a time');
+      	alert('Select only one movie at a time');
     else if(inputitems.length == 0)
-      alert('nothing selected, mp4 and avi only for now');
+      	alert('Select a movie first');
     else {
-      
-    //var file = prompt("file", "");
-    var dir = prompt("dir", "");
-      //params_view.params.input + 
-      extractmovie(inputitems[0], params_view.params.input + dir);
+      	var dir = prompt("dir", "");
+      	extractmovie(inputitems[0], params_view.params.input + dir);
     }
     
   });
