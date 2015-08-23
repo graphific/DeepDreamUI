@@ -138,4 +138,8 @@ tr{
   border-radius: 0px;
   border:0px;
 }
+.link{
+  color:#23527C;
+  cursor: pointer;
+}
 

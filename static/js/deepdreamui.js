@@ -302,13 +302,38 @@ function get_console_poll(id,keyword,inputtype) {
   poll(id,keyword,inputtype);
 }
 
+function load_job(jobId){
+  $.getJSON( jobId, function( data ) {
+    params_view.params = data;
+    get_directory(params_view.params.input,"input",0,0);
+    get_directory(params_view.params.output,"output",0,0); 
+
+    $("#job_title").html(params_view.params.jobname + " by " + params_view.params.author);
+    $("#params_network option").filter(function() { return $(this).text() == params_view.params.network; }).prop('selected', true);
+    $("#params_presets option").filter(function() { return $(this).text() == params_view.params.presets; }).prop('selected', true);
+    $("#params_layers").val(params_view.params.layers);
+    $("#params_octaves option").filter(function() { return $(this).text() == params_view.params.octaves; }).prop('selected', true);
+    $("#params_octavescale option").filter(function() { return $(this).text() == params_view.params.octavescale; }).prop('selected', true);
+    $("#params_iterations option").filter(function() { return $(this).text() == params_view.params.itterations; }).prop('selected', true);
+    $("#params_jitter option").filter(function() { return $(this).text() == params_view.params.jitter; }).prop('selected', true);
+    $("#params_stepsize option").filter(function() { return $(this).text() == params_view.params.stepsize; }).prop('selected', true);
+    $("#params_blend option").filter(function() { return $(this).text() == params_view.params.blend; }).prop('selected', true);
+    $("#params_blend option").filter(function() { return $(this).text() == params_view.params.blend; }).prop('selected', true);
+    $("#params_opticalflow option").filter(function() { return $(this).text() == params_view.params.opticalflow; }).prop('selected', true);
+    $("#params_guide").val(params_view.params.guide);
+    $("#params_gpu option").filter(function() { return $(this).text() == params_view.params.gpu; }).prop('selected', true);
+
+    $( "#tab_home" ).trigger( "click" );
+  });
+}
+function delete_job(jobId){
+  alert("delete_job: " + jobId);
+}
 function display_job(fileId){
-	console.log(fileId);
 
 	$.getJSON( fileId, function( d ) {
 	  console.log(d);
-	 	$("#jobs_table").append("<tr><td>"+d.jobname+"</td><td>"+d.date+"</td><td>"+d.author+"</td><td><a href='" + fileId + "'><span class='glyphicon glyphicon-circle-arrow-down'></span> Load</a></td><td><a href=''><span class='glyphicon glyphicon-remove'></span> Delete</a></td></tr>");
-	 		
+	 	$("#jobs_table").append("<tr><td><span title='"+fileId+"' class='link' onclick=load_job('"+fileId+"')><span class='glyphicon glyphicon-file'></span> "+d.jobname+"</span></td><td>"+d.date+"</td><td>"+d.author+"</td><td><span title='"+fileId+"' class='link' onclick=delete_job('"+fileId+"')><span class='glyphicon glyphicon-remove'></span> Delete</span></td></tr>");
 	});
 }
 
@@ -584,6 +609,9 @@ $(function(){
     	params_view.params.jobname = jobname;
     	params_view.params.date = new Date();
       params_view.params.author = username;
+      params_view.params.network = $('#params_network').find(":selected").text();
+      params_view.params.presets = $('#params_presets').find(":selected").text();
+
     	$.ajax({
 	        type: "POST",
 	        contentType: "application/json; charset=utf-8",

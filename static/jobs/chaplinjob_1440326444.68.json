@@ -1,0 +1,1 @@
+{"layers": "asdad", "guide": "", "jitter": "39", "network": "placesnet", "opticalflow": 1, "presets": "full", "itterations": "15", "jobname": "chaplinjob", "stepsize": "2.1", "output": "static/output/user1", "author": "samim", "gpu": 1, "date": "2015-08-23T10:40:44.670Z", "octaves": "1", "blend": "0.8", "octavescale": "1.5", "input": "static/input/chaplin"}
