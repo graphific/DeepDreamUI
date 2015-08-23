@@ -12,24 +12,19 @@ import json
 import sys
 import urllib2, urllib
 import time
+import datetime
+import argparse
+import yaml
 
 import os
 import io
-import signal
-
 from os import listdir
 from os.path import isfile, join
 from os import path
 import subprocess
 
-import argparse
-import datetime
-
-
 reload(sys)
 sys.setdefaultencoding("utf-8")
-
-import yaml
 
 with open("config.yml", 'r') as ymlfile:
     cfg = yaml.load(ymlfile)
@@ -43,26 +38,20 @@ if 'local' in cfg:
         rootfolder = loc['folder']
     if 'default_port' in loc:
         default_port = loc['default_port']
-    
-
-UPLOAD_FOLDER = rootfolder+'static/input'
-ALLOWED_EXTENSIONS = set(['mov', 'mp4', 'png', 'jpg', 'jpeg', 'gif'])
 
 app = Flask(__name__)
 
+UPLOAD_FOLDER = rootfolder+'static/input'
+ALLOWED_EXTENSIONS = set(['mov', 'mp4', 'png', 'jpg', 'jpeg', 'gif'])
 cors = CORS(app)
 app.config['CORS_HEADERS'] = 'Content-Type'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+newproc = None
 
-
-
-    
+# Main template
 @app.route('/')
 def index(text_input= "", text_output= ""):
     return render_template('hello.html', text_input="", text_output="")
-
-
-newproc = None
 
 # Start deepdream renderer
 @app.route('/api/v1.0/getrender', methods=['POST'])
@@ -151,40 +140,22 @@ def api_input():
 # Exctract frames of movie
 @app.route('/api/v1.0/extractmovie', methods=['POST'])
 def api_extractmovie():
-    print "api_extractmovie()"
-    print request.json
     if not request.json or not 'movie' in request.json or not 'directory' in request.json:
         abort(400)
     mfile = request.json['movie'] #low, medium, high
     mdir = request.json['directory'] 
-
-    #command = 'mkdir ' + foldername
-    #response = subprocess.call(command, shell=True)
-
-    #return jsonify({'output': response}), 201
-    print "Start Extracting Frames"
     command = 'python dreamer.py --input '+str(mfile)+' --output '+str(mdir)+' --extract 1'
-    print command
-
     subprocess.Popen("exec " + command, stdout=subprocess.PIPE, shell=True)
     return 'createmovie'
 
 # make movie from frames
 @app.route('/api/v1.0/makemovie', methods=['POST'])
 def api_makemovie():
-    print "api_makemovie()"
-    print request.json
     if not request.json or not 'movie' in request.json or not 'directory' in request.json:
         abort(400)
-
     mfile = request.json['movie']
     mdir = request.json['directory'] 
-    print mfile
-
-    print "Start Creating Movie"
     command = 'python dreamer.py --framerate 25 --input '+str(mfile)+' --output '+str(mdir) + ' --create 1 '
-    print command
-
     subprocess.Popen("exec " + command, stdout=subprocess.PIPE, shell=True)
     return 'createmovie'
 
@@ -194,24 +165,18 @@ def api_makefolder():
     if not request.json or not 'id' in request.json:
         abort(400)
     foldername = request.json['id']
-    print(foldername);
-
     command = 'mkdir ' + foldername
     response = subprocess.call(command, shell=True)
-
     return jsonify({'output': response}), 201
-
 
 # Create new job
 @app.route('/api/v1.0/makejob', methods=['POST'])
 def api_makejob():
     if not request.json or not 'job' in request.json:
         abort(400)
-
     newjob = request.json['job']
     newjobtitle = newjob['jobname']
     date = str(time.time())
-
     filename = 'static/jobs/'+newjobtitle+'_'+date+'.json'
 
     with open(filename, 'w+') as outfile:
@@ -237,7 +202,6 @@ def api_getjobs():
 
     return jsonify({'root': jobspath, 'files': foundfile}), 201
  
-
 # Delete Files/Folders
 @app.route('/api/v1.0/delete', methods=['POST'])
 def api_delete():
@@ -254,9 +218,7 @@ def api_delete():
     response = subprocess.call(command, shell=True)
     return jsonify({'output': response}), 201
 
-
-
-# UPLOAD FILES
+# Upload Files
 def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS

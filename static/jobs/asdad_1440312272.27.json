@@ -1,0 +1,1 @@
+{"layers": "inception_3b/output", "octaves": 4, "network": ["googlelenet", "placesnet"], "opticalflow": 1, "presets": ["full", "medium", "low"], "itterations": 10, "jobname": "asdad", "stepsize": 1.5, "output": "static/output/", "author": "samim", "guide": "", "date": "2015-08-23T06:44:32.260Z", "jitter": 32, "blend": 0.5, "octavescale": 1.4, "gpu": 1, "input": "static/input/"}

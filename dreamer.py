@@ -319,14 +319,27 @@ def main(inputdir, outputdir, preview, octaves, octave_scale, iterations, jitter
 def extractVideo(inputdir, outputdir):
     if not os.path.exists(outputdir):
         os.makedirs(outputdir)
-    print subprocess.Popen('ffmpeg -i ' + inputdir + ' -f image2 ' + outputdir + '/image-%06d.png', shell=True,
-                           stdout=subprocess.PIPE).stdout.read()
+    writeToLog("Extracting Video: " + inputdir + " To: " + outputdir)
+
+    command = 'ffmpeg -i ' + inputdir + ' -f image2 ' + outputdir + '/image-%06d.png'
+    proc = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True, universal_newlines=True)
+    while proc.poll() is None:
+        line = proc.stdout.readline()
+        writeToLog(line + '\n')
+    
+    writeToLog("Done Extracting: " + inputdir + " To: " + outputdir)
 
 
 def createVideo(inputdir, outputdir, framerate):
-    print subprocess.Popen('ffmpeg -r ' + str(
-        framerate) + ' -f image2 -i "' + inputdir + '/frame_%6d.png" -c:v libx264 -crf 20 -pix_fmt yuv420p -tune fastdecode -tune zerolatency -profile:v baseline ' + outputdir,
-                           shell=True, stdout=subprocess.PIPE).stdout.read()
+    writeToLog("Creating Video: " + inputdir + " To: " + outputdir)
+
+    command = 'ffmpeg -r ' + str(framerate) + ' -f image2 -i "' + inputdir + '/frame_%6d.png" -c:v libx264 -crf 20 -pix_fmt yuv420p -tune fastdecode -tune zerolatency -profile:v baseline ' + outputdir
+    proc = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True, universal_newlines=True)
+    while proc.poll() is None:
+        line = proc.stdout.readline()
+        writeToLog(line + '\n')
+    
+    writeToLog("Done Creating Video: " + inputdir + " To: " + outputdir)
 
 
 if __name__ == "__main__":

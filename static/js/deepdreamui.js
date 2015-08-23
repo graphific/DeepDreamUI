@@ -271,10 +271,31 @@ function get_directory(id,type,startimage,append) {
 }
 
 function get_console(id) {
+  console.log("get_console: " + id);
   var timestamp = new Date().getTime();
   jQuery.get('static/render.log?t='+ timestamp, function(data) {
     $("#output_console").val(data); 
   });
+}
+
+function get_console_poll(id,keyword,inputtype) {
+  var counter = ' ';
+  function poll(id,keyword,type){
+    var timestamp = new Date().getTime();
+    jQuery.get('static/render.log?t='+ timestamp, function(data) {
+      $("#output_console").val(data + counter); 
+      counter += '.';
+      if( data.indexOf('Done') === -1){
+        setTimeout(function(){ poll(id,keyword,inputtype); },1000);
+      }
+      else{        
+        if(inputtype === "input"){ get_directory(params_view.params.input,"input",0,0);}
+        if(inputtype === "output"){ get_directory(params_view.params.output,"output",0,0);}  
+        setTimeout(function(){ $( "#tab_home" ).trigger( "click" ); },500);
+      }
+    });
+  }
+  poll(id,keyword,inputtype);
 }
 
 function display_job(fileId){
@@ -287,15 +308,19 @@ function display_job(fileId){
 	});
 }
 
-function get_jobs(){
-	$("#jobs_table").empty();
+function get_jobs(reload){
+	
   $.ajax({
     type: "POST",
     contentType: "application/json; charset=utf-8",
     url: "/api/v1.0/getjobs",
     success: function (data) {
+      $("#jobs_table").empty();
       for(var i=0;i<data.files.length;i++){
       	display_job(data.files[i]);
+      }
+      if(reload === 1){
+        $( "#tab_jobs" ).trigger( "click" );
       }
     },
     dataType: "json"
@@ -499,7 +524,7 @@ $(function(){
   get_directory("static/input/","input",0,0);
   get_directory("static/output/","output",0,0);
   get_console("idtag");
-  get_jobs();
+  get_jobs(0);
   $("#render_final").show();
   $("#render_final_stop").hide();
 
@@ -548,9 +573,9 @@ $(function(){
 	        url: "/api/v1.0/makejob",
 	        data: JSON.stringify({job:params_view.params}),
 	        success: function (data) {
-	        	alert("Job Created: " + data.output);
-	          	console.log("job created: " + data);
-	          	get_jobs();
+	        	//alert("Job Created: " + data.output);
+          	console.log("job created: " + data);
+          	get_jobs(1);
 	        },
 	        dataType: "json"
 	    });
@@ -596,21 +621,34 @@ $(function(){
 
 
   function extractmovie(file,dir) {
+    
+    
+    $( "#tab_console" ).trigger( "click" );
+    $("#output_console").val(""); 
+    setTimeout(function(){
+      get_console_poll("idtag","done","input");
+    },1200);
+    
     $.ajax({
       type: "POST",
       contentType: "application/json; charset=utf-8",
       url: "/api/v1.0/extractmovie",
       data: JSON.stringify({movie:file,directory:dir}),
       success: function (data) {
-        console.log("frames extracted from: " + file);
-        get_directory(params_view.params.input,"input",0,0);
-        get_directory(params_view.params.output,"output",0,0);
-        alert("Movie Extraction done");
+        console.log("frames extracted from: " + file);        
       },
       dataType: "json"
     });
   }
   function makemovie(file,dir) {
+    
+    
+    $( "#tab_console" ).trigger( "click" );
+    $("#output_console").val(""); 
+    setTimeout(function(){
+      get_console_poll("idtag","done","output");
+    },1200);
+
     $.ajax({
       type: "POST",
       contentType: "application/json; charset=utf-8",
@@ -618,9 +656,6 @@ $(function(){
       data: JSON.stringify({movie:file,directory:dir}),
       success: function (data) {
         console.log("movie created: " + file);
-        get_directory(params_view.params.input,"input",0,0);
-        get_directory(params_view.params.output,"output",0,0);
-        alert("Movie Creation Done");
       },
       dataType: "json"
     });
@@ -654,6 +689,11 @@ $(function(){
     
   });
 
+
+  $("#tab_console").click(function(event) {
+    get_console("idtag");
+  });
+  
   // make dir
   $("#input_makefolder").click(function(event) {
     event.preventDefault();
