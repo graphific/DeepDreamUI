@@ -28,8 +28,9 @@ var params_view = {
 var selectedFiles = [];
 var maxImageView = 200;
 var username;
-var s3key;
-var s3secret;
+var settings_ftp_username;
+var settings_ftp_server;
+var settings_ftp_password;
 
 
 // list directories & files
@@ -328,9 +329,21 @@ function load_job(jobId){
 }
 function delete_job(jobId){
   alert("delete_job: " + jobId);
+  
+  // $.ajax({
+  //   type: "POST",
+  //   contentType: "application/json; charset=utf-8",
+  //   url: "/api/v1.0/delete",
+  //   data: JSON.stringify({id:jobId}),
+  //   success: function (data) {
+  //     console.log("job deleted: " + jobId);
+  //     get_jobs(1);
+  //   },
+  //   dataType: "json"
+  // });
 }
-function display_job(fileId){
 
+function display_job(fileId){
 	$.getJSON( fileId, function( d ) {
 	  console.log(d);
 	 	$("#jobs_table").append("<tr><td><span title='"+fileId+"' class='link' onclick=load_job('"+fileId+"')><span class='glyphicon glyphicon-file'></span> "+d.jobname+"</span></td><td>"+d.date+"</td><td>"+d.author+"</td><td><span title='"+fileId+"' class='link' onclick=delete_job('"+fileId+"')><span class='glyphicon glyphicon-remove'></span> Delete</span></td></tr>");
@@ -524,24 +537,30 @@ function cookieHandler(){
           username = Input.val();
           setCookie("username",username,365);
         }
-        else if(this.name === "s3key"){
-          s3key = Input.val();
-          setCookie("s3key",s3key,365);
+        else if(this.name === "ftpusername"){
+          settings_ftp_username = Input.val();
+          setCookie("settings_ftp_username",settings_ftp_username,365);
         }
-        else if(this.name === "s3secret"){
-          s3secret = Input.val();
-          setCookie("s3secret",s3secret,365);
+        else if(this.name === "ftpserver"){
+          settings_ftp_server = Input.val();
+          setCookie("settings_ftp_server",settings_ftp_server,365);
         }
+        else if(this.name === "ftppassword"){
+          settings_ftp_password = Input.val();
+          setCookie("settings_ftp_password",settings_ftp_password,365);
+        }
+        
       }
     });
   });
-
   username = getCookie("username");
-  s3key = getCookie("s3key");
-  s3secret = getCookie("s3secret");
+  settings_ftp_server = getCookie("settings_ftp_username");
+  settings_ftp_username = getCookie("settings_ftp_server");
+  settings_ftp_password = getCookie("settings_ftp_password");
   $("#settings_username").val(username);
-  $("#settings_s3key").val(s3key);
-  $("#settings_s3secret").val(s3secret);
+  $("#settings_ftp_username").val(settings_ftp_username);
+  $("#settings_ftp_server").val(settings_ftp_server);
+  $("#settings_ftp_password").val(settings_ftp_password);
 }
 
 

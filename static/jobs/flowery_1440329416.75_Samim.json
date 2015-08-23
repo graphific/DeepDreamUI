@@ -1,0 +1,1 @@
+{"layers": "inception_3b/output", "octaves": 4, "network": "googlelenet", "opticalflow": 1, "presets": "full", "itterations": 10, "jobname": "flowery", "stepsize": 1.5, "output": "static/output/user2", "author": "Samim", "guide": "", "date": "2015-08-23T11:30:16.744Z", "jitter": 32, "blend": 0.5, "octavescale": 1.4, "gpu": 1, "input": "static/input/flowers"}

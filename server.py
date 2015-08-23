@@ -176,8 +176,10 @@ def api_makejob():
         abort(400)
     newjob = request.json['job']
     newjobtitle = newjob['jobname']
+    newjobusername = newjob['author']
+
     date = str(time.time())
-    filename = 'static/jobs/'+newjobtitle+'_'+date+'.json'
+    filename = 'static/jobs/'+newjobtitle+'_'+date+'_'+newjobusername+'.json'
 
     with open(filename, 'w+') as outfile:
         json.dump(newjob, outfile)
@@ -185,7 +187,7 @@ def api_makejob():
     response = "job created: " + filename
     return jsonify({'output': response}), 201
 
-# Show console
+# Show jobs
 @app.route('/api/v1.0/getjobs', methods=['POST'])
 def api_getjobs():
     foundfile = []
