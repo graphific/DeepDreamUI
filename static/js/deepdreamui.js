@@ -545,12 +545,25 @@ $(function(){
     // renderer feedback HACK
     clearInterval(renderInterval);
     renderInterval = setInterval(function(){ 
-      get_console("idtag"); 
-      setTimeout(function(){
-        var textarea = document.getElementById('output_console');
-        textarea.scrollTop = textarea.scrollHeight + 100;  
-        get_directory(params_view.params.output,"output",0,0);
-      },200);
+
+      var timestamp = new Date().getTime();
+      jQuery.get('static/render.log?t='+ timestamp, function(data) {
+        $("#output_console").val(data); 
+        if( data.indexOf('Finished') === -1){
+          setTimeout(function(){
+            var textarea = document.getElementById('output_console');
+            textarea.scrollTop = textarea.scrollHeight + 100;  
+            get_directory(params_view.params.output,"output",0,0);
+          },200);
+        }
+        else{
+          get_directory(params_view.params.output,"output",0,0);
+          clearInterval(renderInterval);
+          renderInterval = 0;
+          $("#render_final").show();
+          $("#render_final_stop").hide();
+        }
+      });
     },5000);
   });
 

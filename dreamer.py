@@ -219,7 +219,6 @@ def main(inputdir, outputdir, preview, octaves, octave_scale, iterations, jitter
     def getStats(saveframe, var_counter, vids, difference):
         # Stats
         ret = ''
-        ret += '***************************************' + '\n'
         ret += 'Saving Image As: ' + saveframe + '\n'
         ret += 'Frame ' + str(var_counter) + ' of ' + str(len(vids)) + '\n'
         ret += 'Frame Time: ' + str(difference) + 's' + '\n'
@@ -227,8 +226,8 @@ def main(inputdir, outputdir, preview, octaves, octave_scale, iterations, jitter
         m, s = divmod(timeleft, 60)
         h, m = divmod(m, 60)
         ret += 'Estimated Total Time Remaining: ' + str(timeleft) + 's (' + "%d:%02d:%02d" % (h, m, s) + ')' + '\n'
-        ret += '***************************************' + '\n'+ '\n'
-        writeToLog(ret + '\n')
+        ret += '\n'
+        writeToLog(ret)
 
     if flow is 1:
         import cv2
