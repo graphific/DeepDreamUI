@@ -228,9 +228,11 @@ def api_getjobs():
 
     # found files
     for path, subdirs, files in os.walk(jobspath):
+        matches = []
         for name in files:
             found = os.path.join(path, name)
-            foundfile.append(found)
+            matches.append(found)
+        foundfile = sorted(matches, key=os.path.getmtime,reverse=True)
         break
 
     return jsonify({'root': jobspath, 'files': foundfile}), 201

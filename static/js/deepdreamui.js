@@ -27,6 +27,10 @@ var params_view = {
 };
 var selectedFiles = [];
 var maxImageView = 200;
+var username;
+var s3key;
+var s3secret;
+
 
 // list directories & files
 function get_directory(id,type,startimage,append) {  
@@ -277,7 +281,7 @@ function display_job(fileId){
 	console.log(fileId);
 
 	$.getJSON( fileId, function( d ) {
-	  	console.log(d);
+	  console.log(d);
 	 	$("#jobs_table").append("<tr><td>"+d.jobname+"</td><td>"+d.date+"</td><td>"+d.author+"</td><td><a href='" + fileId + "'><span class='glyphicon glyphicon-circle-arrow-down'></span> Load</a></td><td><a href=''><span class='glyphicon glyphicon-remove'></span> Delete</a></td></tr>");
 	 		
 	});
@@ -290,7 +294,6 @@ function get_jobs(){
     contentType: "application/json; charset=utf-8",
     url: "/api/v1.0/getjobs",
     success: function (data) {
-
       for(var i=0;i<data.files.length;i++){
       	display_job(data.files[i]);
       }
@@ -432,9 +435,66 @@ function setupForm(){
 
 }
 
+
+
+function setCookie(cname,cvalue,exdays){
+  var d = new Date();
+  d.setTime(d.getTime()+(exdays*24*60*60*1000));
+  var expires = "expires="+d.toGMTString();
+  document.cookie = cname + "=" + cvalue + "; " + expires;
+}
+
+function getCookie(cname){
+  var name = cname + "=";
+  var ca = document.cookie.split(';');
+  for(var i=0; i<ca.length; i++) 
+    {
+    var c = ca[i].trim();
+    if (c.indexOf(name)==0) return c.substring(name.length,c.length);
+  }
+  return "";
+}
+
+function cookieHandler(){
+  // cookie handler
+  $('input, textarea').each(function () {
+    var Input = $(this);
+    var default_value = Input.val();
+
+    Input.focus(function() {
+      if(Input.val() == default_value) Input.val("");
+    }).blur(function(){
+      if(Input.val().length == 0){Input.val(default_value);}
+      else{
+        if(this.name === "username"){
+          username = Input.val();
+          setCookie("username",username,365);
+        }
+        else if(this.name === "s3key"){
+          s3key = Input.val();
+          setCookie("s3key",s3key,365);
+        }
+        else if(this.name === "s3secret"){
+          s3secret = Input.val();
+          setCookie("s3secret",s3secret,365);
+        }
+      }
+    });
+  });
+
+  username = getCookie("username");
+  s3key = getCookie("s3key");
+  s3secret = getCookie("s3secret");
+  $("#settings_username").val(username);
+  $("#settings_s3key").val(s3key);
+  $("#settings_s3secret").val(s3secret);
+}
+
+
 var renderInterval;
 
-$(function() {
+$(function(){
+  // get datat
   setupForm();
   get_directory("static/input/","input",0,0);
   get_directory("static/output/","output",0,0);
@@ -443,13 +503,8 @@ $(function() {
   $("#render_final").show();
   $("#render_final_stop").hide();
 
-
-  // var test = 0;
-  // setInterval(function(){
-  // 	test+=10;
-  // 	get_directory("static/input/","input",test,1);
-  // 	//get_directory("static/output/","output",test);
-  // },3000);
+  cookieHandler();
+ 
 
   /////// click handlers
 
@@ -486,6 +541,7 @@ $(function() {
     if (jobname != null) {
     	params_view.params.jobname = jobname;
     	params_view.params.date = new Date();
+      params_view.params.author = username;
     	$.ajax({
 	        type: "POST",
 	        contentType: "application/json; charset=utf-8",

@@ -132,3 +132,10 @@ tr{
   height: 20px;
 }
 
+#output_console{
+  background-color: black;
+  color: #d3d3d3;
+  border-radius: 0px;
+  border:0px;
+}
+
