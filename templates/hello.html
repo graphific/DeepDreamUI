@@ -1,29 +1,23 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>DeepDreamAnim UI</title>
+    <title>DeepDream UI</title>
     <meta charset="utf-8">
     <meta content="initial-scale=1, minimum-scale=1, width=device-width" name="viewport">
 
     <script src="static/js/jquery-2.1.4.min.js"></script>
-    <script src="static/js/jquery-ui.min.js"></script>
-    <script src="static/js/buzz.min.js"></script>
-    <script src='static/js/nprogress.js'></script>
-    <script src="static/js/bootstrap.min.js"></script>
+    <script src="static/js/jquery-ui/jquery-ui.min.js"></script>
     <script src="static/js/jquery.magnific-popup.js"></script>
+    <script src="static/js/bootstrap/js/bootstrap.min.js"></script>
     <script src="static/js/deepdreamui.js"></script>
 
-    <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
-    <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
-
-    <link rel='stylesheet' href='static/css/nprogress.css'/>
-    <link rel='stylesheet' href='static/css/magnific-popup.css'/>
-    <link rel="stylesheet" href="//code.jquery.com/ui/1.10.4/themes/smoothness/jquery-ui.css" />
-
-    <link rel="stylesheet" href="static/css/main.css"> 
-    
     <link href='http://fonts.googleapis.com/css?family=Roboto:400,100,300,500,700,900' rel='stylesheet' type='text/css'>
-    <link href="data:image/x-icon;base64,AAABAAEAEBAQAAEABAAoAQAAFgAAACgAAAAQAAAAIAAAAAEABAAAAAAAgAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAJ6TrAFy+8QCC0vgA7+/vAC6n7ACE0/gAS2RuAKbU5QDAwMAAv+3+ACek6gApoeYAAAAAAAAAAAAAAAAARERERERERABEREREREREAEREREREREQAREREeIRERABJmZSohUREAERERKolVEQAREREozUVRABJmZRDNlFUAEREREQzZRUAREREREM2W1BJmZmZRDNlxUREREREQzZVREREREREMzVJmZmZmURDM0REREREREQzRERERERERAMAAwAAAAMAAAADAAAAAwAAAAMAAAADAAAAAwAAAAMAAAADAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgAA" rel="icon" type="image/x-icon" />
+    <link href="static/img/favicon.ico" rel="icon" type="image/x-icon" />
+
+    <link rel="stylesheet" href="static/js/bootstrap/css/bootstrap.min.css">
+    <link rel='stylesheet' href='static/css/magnific-popup.css'/>
+    <link rel="stylesheet" href="static/js/jquery-ui/jquery-ui.min.css" />
+    <link rel="stylesheet" href="static/css/main.css"> 
   </head>
 
   <body>
@@ -35,12 +29,112 @@
         <li><a data-toggle="tab" id="tab_console" href="#console"><span class="glyphicon glyphicon-list-alt" aria-hidden="true"></span> Console</a></li>
         <li><a data-toggle="tab" id="tab_jobs" href="#jobs"><span class="glyphicon glyphicon-file" aria-hidden="true"></span> Jobs</a></li>
         <li><a data-toggle="tab" id="tab_settings" href="#settings"><span class="glyphicon glyphicon-edit" aria-hidden="true"></span> Settings</a></li>
+        <li><a data-toggle="tab" id="tab_help" href="#help"><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span> Help</a></li>
 
       </ul>
       <br/>
 
       <div class="tab-content">
-        
+        <div id="help" class="tab-pane fade help_container">
+          <h4>DeepDream UI Help</h4>
+          This tool helps to create animations with deepdream. Extract frames from videos, process them with deepdream and then output as new video file. Frame blending option is provided, to ensure "stable" dreams across frames. A preview function make rapid iterations possible. Optionally guided dreaming & optical flow can be used.
+
+          <br/>
+
+          <h4>Layers</h4>
+
+          <img alt="" title="" src="static/img/help/frame_0_delay-0.75s.gif" />
+          <img alt="" title="" src="static/img/help/frame_1_delay-0.75s.gif" />
+          <img alt="" title="" src="static/img/help/frame_2_delay-0.75s.gif" />
+          <img alt="" title="" src="static/img/help/frame_3_delay-0.75s.gif" />
+          <img alt="" title="" src="static/img/help/frame_4_delay-0.75s.gif" />
+          <img alt="" title="" src="static/img/help/frame_5_delay-0.75s.gif" />
+          <img alt="" title="" src="static/img/help/frame_6_delay-0.75s.gif" />
+          <img alt="" title="" src="static/img/help/frame_7_delay-0.75s.gif" />
+          <img alt="" title="" src="static/img/help/frame_8_delay-0.75s.gif" />
+          <img alt="" title="" src="static/img/help/frame_9_delay-0.75s.gif" />
+
+          <img alt="" title="" src="static/img/help/frame_10_delay-0.75s.gif" />
+          <img alt="" title="" src="static/img/help/frame_11_delay-0.75s.gif" />
+          <img alt="" title="" src="static/img/help/frame_12_delay-0.75s.gif" />
+          <img alt="" title="" src="static/img/help/frame_13_delay-0.75s.gif" />
+          <img alt="" title="" src="static/img/help/frame_14_delay-0.75s.gif" />
+          <img alt="" title="" src="static/img/help/frame_15_delay-0.75s.gif" />
+          <img alt="" title="" src="static/img/help/frame_16_delay-0.75s.gif" />
+          <img alt="" title="" src="static/img/help/frame_17_delay-0.75s.gif" />
+          <img alt="" title="" src="static/img/help/frame_18_delay-0.75s.gif" />
+          <img alt="" title="" src="static/img/help/frame_19_delay-0.75s.gif" />
+
+          <img alt="" title="" src="static/img/help/frame_20_delay-0.75s.gif" />
+          <img alt="" title="" src="static/img/help/frame_21_delay-0.75s.gif" />
+          <img alt="" title="" src="static/img/help/frame_22_delay-0.75s.gif" />
+          <img alt="" title="" src="static/img/help/frame_23_delay-0.75s.gif" />
+          <img alt="" title="" src="static/img/help/frame_24_delay-0.75s.gif" />
+          <img alt="" title="" src="static/img/help/frame_25_delay-0.75s.gif" />
+          <img alt="" title="" src="static/img/help/frame_26_delay-0.75s.gif" />
+          <img alt="" title="" src="static/img/help/frame_27_delay-0.75s.gif" />
+          <img alt="" title="" src="static/img/help/frame_28_delay-0.75s.gif" />
+          <img alt="" title="" src="static/img/help/frame_29_delay-0.75s.gif" />
+
+          <img alt="" title="" src="static/img/help/frame_30_delay-0.75s.gif" />
+          <img alt="" title="" src="static/img/help/frame_31_delay-0.75s.gif" />
+          <img alt="" title="" src="static/img/help/frame_32_delay-0.75s.gif" />
+          <img alt="" title="" src="static/img/help/frame_33_delay-0.75s.gif" />
+          <img alt="" title="" src="static/img/help/frame_34_delay-0.75s.gif" />
+          <img alt="" title="" src="static/img/help/frame_35_delay-0.75s.gif" />
+          <img alt="" title="" src="static/img/help/frame_36_delay-0.75s.gif" />
+          <img alt="" title="" src="static/img/help/frame_37_delay-0.75s.gif" />
+          <img alt="" title="" src="static/img/help/frame_38_delay-0.75s.gif" />
+          <img alt="" title="" src="static/img/help/frame_39_delay-0.75s.gif" />
+
+          <img alt="" title="" src="static/img/help/frame_40_delay-0.75s.gif" />
+          <img alt="" title="" src="static/img/help/frame_41_delay-0.75s.gif" />
+          <img alt="" title="" src="static/img/help/frame_42_delay-0.75s.gif" />
+          <img alt="" title="" src="static/img/help/frame_43_delay-0.75s.gif" />
+          <img alt="" title="" src="static/img/help/frame_44_delay-0.75s.gif" />
+          <img alt="" title="" src="static/img/help/frame_45_delay-0.75s.gif" />
+          <img alt="" title="" src="static/img/help/frame_46_delay-0.75s.gif" />
+          <img alt="" title="" src="static/img/help/frame_47_delay-0.75s.gif" />
+          <img alt="" title="" src="static/img/help/frame_48_delay-0.75s.gif" />
+          <img alt="" title="" src="static/img/help/frame_49_delay-0.75s.gif" />
+
+          <img alt="" title="" src="static/img/help/frame_50_delay-0.75s.gif" />
+          <img alt="" title="" src="static/img/help/frame_51_delay-0.75s.gif" />
+          <img alt="" title="" src="static/img/help/frame_52_delay-0.75s.gif" />
+          <img alt="" title="" src="static/img/help/frame_53_delay-0.75s.gif" />
+          <img alt="" title="" src="static/img/help/frame_54_delay-0.75s.gif" />
+          <img alt="" title="" src="static/img/help/frame_55_delay-0.75s.gif" />
+          <img alt="" title="" src="static/img/help/frame_56_delay-0.75s.gif" />
+          <img alt="" title="" src="static/img/help/frame_57_delay-0.75s.gif" />
+          <img alt="" title="" src="static/img/help/frame_58_delay-0.75s.gif" />
+          <img alt="" title="" src="static/img/help/frame_59_delay-0.75s.gif" />
+
+          <img alt="" title="" src="static/img/help/frame_60_delay-0.75s.gif" />
+          <img alt="" title="" src="static/img/help/frame_61_delay-0.75s.gif" />
+          <img alt="" title="" src="static/img/help/frame_62_delay-0.75s.gif" />
+          <img alt="" title="" src="static/img/help/frame_63_delay-0.75s.gif" />
+          <img alt="" title="" src="static/img/help/frame_64_delay-0.75s.gif" />
+          <img alt="" title="" src="static/img/help/frame_65_delay-0.75s.gif" />
+          <img alt="" title="" src="static/img/help/frame_66_delay-0.75s.gif" />
+          <img alt="" title="" src="static/img/help/frame_67_delay-0.75s.gif" />
+          <img alt="" title="" src="static/img/help/frame_68_delay-0.75s.gif" />
+          <img alt="" title="" src="static/img/help/frame_69_delay-0.75s.gif" />
+
+          <img alt="" title="" src="static/img/help/frame_70_delay-0.75s.gif" />
+          <img alt="" title="" src="static/img/help/frame_71_delay-0.75s.gif" />
+          <img alt="" title="" src="static/img/help/frame_72_delay-0.75s.gif" />
+          <img alt="" title="" src="static/img/help/frame_73_delay-0.75s.gif" />
+          <img alt="" title="" src="static/img/help/frame_74_delay-0.75s.gif" />
+          <img alt="" title="" src="static/img/help/frame_75_delay-0.75s.gif" />
+          <img alt="" title="" src="static/img/help/frame_76_delay-0.75s.gif" />
+          <img alt="" title="" src="static/img/help/frame_77_delay-0.75s.gif" />
+          <img alt="" title="" src="static/img/help/frame_78_delay-0.75s.gif" />
+          <img alt="" title="" src="static/img/help/frame_79_delay-0.75s.gif" />
+
+          <img alt="" title="" src="static/img/help/frame_80_delay-0.75s.gif" />
+
+        </div>
+
         <div id="settings" class="tab-pane fade">
           <h4>Username</h4>
           <div class="input-group col-xs-4">
@@ -49,15 +143,15 @@
           <br/>
 
           <h4>Server Sync</h4>
-          Ftp Server
+          FTP Server
           <div class="input-group col-xs-4">
             <input type="text" id="settings_ftp_server" name="ftpserver" class="form-control input-lg" placeholder="ftp://server.com" aria-describedby="basic-addon2">
           </div>
-          Ftp Username
+          FTP Username
           <div class="input-group col-xs-4">
             <input type="text" id="settings_ftp_username" name="ftpusername" class="form-control input-lg" placeholder="FTP Username" aria-describedby="basic-addon2">
           </div>
-          Ftp Password
+          FTP Password
           <div class="input-group col-xs-4">
             <input type="password" id="settings_ftp_password" name="ftppassword" class="form-control input-lg" placeholder="FTP Password" aria-describedby="basic-addon2">
           </div>
@@ -155,7 +249,7 @@
               
                 <label class="control-label col-sm-3" for="inputSuccess3">Layers</label>
                 <div class="col-sm-9">
-                  <input type="text" class="form-control input-sm" value="inception_4a/output" id="params_layers"/>
+                  <input type="text" class="form-control input-sm" placeholder="inception_4a/output" id="params_layers"/>
                 </div>
 
                 <label class="control-label col-sm-3" for="inputSuccess3">Octaves</label>

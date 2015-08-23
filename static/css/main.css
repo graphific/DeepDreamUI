@@ -124,8 +124,7 @@ tr{
 #input_dir_display{
   -moz-user-select: none;
   -webkit-user-select: none;
-  user-select: none;
-  
+  user-select: none; 
 }
 
 .dir_display{
@@ -143,4 +142,7 @@ tr{
   cursor: pointer;
 }
 
+.help_container img{
+  width:30%;
+}
 

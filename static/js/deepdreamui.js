@@ -35,12 +35,13 @@ var settings_ftp_password;
 
 // list directories & files
 function get_directory(id,type,startimage,append) {  
-  console.log("get_directory: dir: " + id + " type: " + type +  " startimage: " + startimage + " append: " + append);
+  // console.log("get_directory: dir: " + id + " type: " + type +  " startimage: " + startimage + " append: " + append);
 
   // check if file is image
   function checkURLImg(url) { return(url.match(/\.(jpeg|jpg|png)$/) != null); }
   function checkURLVid(url) { return(url.match(/\.(mp4|mov|avi)$/) != null); }
-  
+  function checkURLJson(url) { return(url.match(/\.(json)$/) != null); }
+ 
   // capitalize First Letter
   function capitalizeFirstLetter(string) { return string.charAt(0).toUpperCase() + string.slice(1);}
 
@@ -106,7 +107,7 @@ function get_directory(id,type,startimage,append) {
 
     $(container).find(image).each(function( index, value ) {
       if(file === value.title){
-        console.log("magnificPopup open index: " + index + " filename: " + value.title);
+        // console.log("magnificPopup open index: " + index + " filename: " + value.title);
         $('.popup-gallery').magnificPopup('open', index); // Will open popup with 5th item
       }
     });
@@ -171,18 +172,27 @@ function get_directory(id,type,startimage,append) {
 	        if(type === "input"){ directoryClickHandler(dir,data.dirs[i],"input","container_input",true); }
 	        if(type === "output"){ directoryClickHandler(dir,data.dirs[i],"output","container_output",true); }
 	      }
-	  }
-
-      // append videos
-      if(append === 0){
+	    
 	      for(var i=0; i < data.files.length; i++){
-	      	// is video
+	      	// append videos
 	        if(checkURLVid(data.files[i])){
 	          var vid ='<div class="input_img_container data_img"><img title="'+data.files[i]+'" class="input_img" src="static/img/video.png" /><div class="data_img_text">'+directoryTextDisplay(data.files[i])+'</div></div>';
 
 	          if(type === "input"){ videoClickHandler(vid,"input","container_input",data.files[i]); }
 	          if(type === "output"){ videoClickHandler(vid,"output","container_output",data.files[i]); }
 	        }
+
+          // append json job files
+          if(checkURLJson(data.files[i]) && type === "output"){
+              
+              var jobfile = data.files[i];
+              $.getJSON( jobfile, function( data ) {
+                var vid ='<div class="input_img_container data_img"><img title="'+jobfile+'" class="input_img" src="static/img/settings.png" /><div class="data_img_text">'+data.jobname+'</div></div>';
+                $(vid).click(function(){ load_job(jobfile); }).appendTo("#container_output");
+              });
+              
+          }
+
 	      }
 	   }
 
@@ -196,7 +206,7 @@ function get_directory(id,type,startimage,append) {
       var check = vidStart+vidAmount;
       if(check >= data.files.length){check = data.files.length;}
       
-      console.log("vidStart: " + vidStart + " vidAmount: " + vidAmount + " data.files.length: " + data.files.length);
+      // console.log("vidStart: " + vidStart + " vidAmount: " + vidAmount + " data.files.length: " + data.files.length);
  
       for(var i=vidStart; i < check; i++){
  	
@@ -276,7 +286,7 @@ function get_directory(id,type,startimage,append) {
 }
 
 function get_console(id) {
-  console.log("get_console: " + id);
+  // console.log("get_console: " + id);
   var timestamp = new Date().getTime();
   jQuery.get('static/render.log?t='+ timestamp, function(data) {
     $("#output_console").val(data); 
@@ -304,6 +314,7 @@ function get_console_poll(id,keyword,inputtype) {
 }
 
 function load_job(jobId){
+  // console.log("load_job: " + jobId);
   $.getJSON( jobId, function( data ) {
     params_view.params = data;
     get_directory(params_view.params.input,"input",0,0);
@@ -329,7 +340,7 @@ function load_job(jobId){
 }
 function delete_job(jobId){
   alert("delete_job: " + jobId);
-  
+
   // $.ajax({
   //   type: "POST",
   //   contentType: "application/json; charset=utf-8",
@@ -345,7 +356,7 @@ function delete_job(jobId){
 
 function display_job(fileId){
 	$.getJSON( fileId, function( d ) {
-	  console.log(d);
+	  // console.log(d);
 	 	$("#jobs_table").append("<tr><td><span title='"+fileId+"' class='link' onclick=load_job('"+fileId+"')><span class='glyphicon glyphicon-file'></span> "+d.jobname+"</span></td><td>"+d.date+"</td><td>"+d.author+"</td><td><span title='"+fileId+"' class='link' onclick=delete_job('"+fileId+"')><span class='glyphicon glyphicon-remove'></span> Delete</span></td></tr>");
 	});
 }
@@ -379,14 +390,14 @@ function stop_render(){
     url: "/api/v1.0/stoprender",
     data: JSON.stringify(params_view.params),
     success: function (data) {
-      console.log(data);
+      // console.log(data);
     },
     dataType: "json"
   });
 }
 
 function get_render() {   
-  console.log(params_view.params); 
+  // console.log(params_view.params); 
   $("#render_final").hide();
   $("#render_final_stop").show();
 
@@ -396,7 +407,7 @@ function get_render() {
     url: "/api/v1.0/getrender",
     data: JSON.stringify(params_view.params),
     success: function (data) {
-      console.log(data);
+      // console.log(data);
       $("#render_final").show();
       $("#render_final_stop").hide();
     },
@@ -567,17 +578,15 @@ function cookieHandler(){
 var renderInterval;
 
 $(function(){
-  // get datat
-  setupForm();
+  // get data
+  cookieHandler();
   get_directory("static/input/","input",0,0);
   get_directory("static/output/","output",0,0);
   get_console("idtag");
   get_jobs(0);
+  setupForm();
   $("#render_final").show();
   $("#render_final_stop").hide();
-
-  cookieHandler();
- 
 
   /////// click handlers
 
@@ -585,6 +594,23 @@ $(function(){
   $("#render_final").click(function(event) {
     event.preventDefault(); 
     get_render();
+
+    // save params file
+    params_view.params.jobname = "Parameters";
+    params_view.params.date = "1";
+    params_view.params.author = username;
+    params_view.params.network = $('#params_network').find(":selected").text();
+    params_view.params.presets = $('#params_presets').find(":selected").text();
+
+    $.ajax({
+      type: "POST",
+      contentType: "application/json; charset=utf-8",
+      url: "/api/v1.0/makejob",
+      data: JSON.stringify({job:params_view.params,dir:params_view.params.output}),
+      success: function (data) {
+      },
+      dataType: "json"
+    });
 
     // renderer feedback HACK
     clearInterval(renderInterval);
@@ -635,10 +661,9 @@ $(function(){
 	        type: "POST",
 	        contentType: "application/json; charset=utf-8",
 	        url: "/api/v1.0/makejob",
-	        data: JSON.stringify({job:params_view.params}),
+	        data: JSON.stringify({job:params_view.params,dir:'static/jobs/'}),
 	        success: function (data) {
-	        	//alert("Job Created: " + data.output);
-          	console.log("job created: " + data);
+          	// console.log("job created: " + data);
           	get_jobs(1);
 	        },
 	        dataType: "json"
@@ -659,7 +684,7 @@ $(function(){
         url: "/api/v1.0/makefolder",
         data: JSON.stringify({id:finalfoldername}),
         success: function (data) {
-          console.log("folder created: " + finalfoldername);
+          // console.log("folder created: " + finalfoldername);
           if(type === "input"){get_directory(params_view.params.input,type,0,0);}
           if(type === "output"){get_directory(params_view.params.output,type,0,0);}
         },
@@ -675,7 +700,7 @@ $(function(){
       url: "/api/v1.0/delete",
       data: JSON.stringify({id:file}),
       success: function (data) {
-        console.log("files deleted: " + file);
+        // console.log("files deleted: " + file);
         get_directory(params_view.params.input,"input",0,0);
         get_directory(params_view.params.output,"output",0,0);
       },
@@ -699,7 +724,7 @@ $(function(){
       url: "/api/v1.0/extractmovie",
       data: JSON.stringify({movie:file,directory:dir}),
       success: function (data) {
-        console.log("frames extracted from: " + file);        
+        // console.log("frames extracted from: " + file);        
       },
       dataType: "json"
     });
@@ -719,7 +744,7 @@ $(function(){
       url: "/api/v1.0/makemovie",
       data: JSON.stringify({movie:file,directory:dir}),
       success: function (data) {
-        console.log("movie created: " + file);
+        // console.log("movie created: " + file);
       },
       dataType: "json"
     });
@@ -774,7 +799,7 @@ $(function(){
     if(selectedFiles.length > 0){
       var answer = confirm("Delete "+selectedFiles.length+" files?")
       if(answer){
-        console.log("delete: " + selectedFiles);
+        // console.log("delete: " + selectedFiles);
         deleteFile(selectedFiles);
       }
     }

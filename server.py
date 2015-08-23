@@ -172,14 +172,16 @@ def api_makefolder():
 # Create new job
 @app.route('/api/v1.0/makejob', methods=['POST'])
 def api_makejob():
-    if not request.json or not 'job' in request.json:
+    if not request.json or not 'job' in request.json or not 'dir' in request.json:
         abort(400)
     newjob = request.json['job']
     newjobtitle = newjob['jobname']
     newjobusername = newjob['author']
+    newjobdir = request.json['dir']
 
-    date = str(time.time())
-    filename = 'static/jobs/'+newjobtitle+'_'+date+'_'+newjobusername+'.json'
+    #date = str(time.time())
+    newjobdate = newjob['date']
+    filename = newjobdir + '/' +newjobtitle+'_'+newjobdate+'_'+newjobusername+'.json'
 
     with open(filename, 'w+') as outfile:
         json.dump(newjob, outfile)
