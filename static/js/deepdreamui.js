@@ -123,8 +123,12 @@ function get_directory(id,type,startimage,append) {
   }
 
   function videoClickHandler(obj,type,container,file){
-    if(type === "input"){ $(obj).click(function(){ imageselector($(this),file); }).appendTo("#"+container);}
-    if(type === "output"){ $(obj).click(function(){ imageselector($(this),file); }).appendTo("#"+container);}      
+    function OpenInNewTab(url) {
+      var win = window.open(url, '_blank');
+      win.focus();
+    }
+    if(type === "input"){ $(obj).dblclick(function(){ OpenInNewTab(file); }).click(function(){ imageselector($(this),file); }).appendTo("#"+container);}
+    if(type === "output"){ $(obj).dblclick(function(){ OpenInNewTab(file); }).click(function(){ imageselector($(this),file); }).appendTo("#"+container);}      
   }
   
   // clear divs
