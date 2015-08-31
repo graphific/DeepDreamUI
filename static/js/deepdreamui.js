@@ -31,7 +31,7 @@ var username;
 var settings_ftp_username;
 var settings_ftp_server;
 var settings_ftp_password;
-
+var showImages = 0;
 
 // list directories & files
 function get_directory(id,type,startimage,append) {  
@@ -101,7 +101,7 @@ function get_directory(id,type,startimage,append) {
     $('.popup-gallery').html('');
 
     $(container).find(image).each(function( index, value ) {
-      $('.popup-gallery').append('<a href="'+value.src+'" title="'+value.title+'"><img src="'+value.src+'" height="75" width="75"></a>');
+      $('.popup-gallery').append('<a href="'+value.title+'" title="'+value.title+'"><img src="'+value.src+'" height="75" width="75"></a>');
     });
 
 
@@ -210,15 +210,29 @@ function get_directory(id,type,startimage,append) {
  
       for(var i=vidStart; i < check; i++){
  	
-     	// is image
+     	// is image 
         if(checkURLImg(data.files[i])){
           var timestamp = new Date().getTime();
 
           if(type === "input"){ 
-            var newimg ='<div class="input_img_container"><img title="'+data.files[i]+'" class="input_img frame_input" src="'+ data.files[i] +'?'+timestamp+' " /></div';
+            var newimg;
+            if(showImages == "1"){
+              newimg ='<div class="input_img_container"><img title="'+data.files[i]+'" class="input_img frame_input" src="'+ data.files[i] +'?'+timestamp+' " /></div>';
+            }
+            else{
+              newimg ='<div class="input_img_container"><img title="'+data.files[i]+'" class="input_img frame_input" /></div>';
+            }
+
+
             imageClickHandler(newimg,"input","container_input",data.files[i]) }
           if(type === "output"){ 
-            var newimg ='<div class="input_img_container"><img title="'+data.files[i]+'" class="input_img frame_output" src="'+ data.files[i] +'?'+timestamp+' " /></div';
+            var newimg;
+            if(showImages == "1"){
+              newimg ='<div class="input_img_container"><img title="'+data.files[i]+'" class="input_img frame_output" src="'+ data.files[i] +'?'+timestamp+' " /></div>';
+            }
+            else{
+              newimg ='<div class="input_img_container"><img title="'+data.files[i]+'" class="input_img frame_output" /></div>';
+            }
             imageClickHandler(newimg,"output","container_output",data.files[i]); 
           }
         }
@@ -533,6 +547,17 @@ function getCookie(cname){
   return "";
 }
 
+function imagepreview(){
+  if(showImages === "1"){
+    showImages = "0";
+  }
+  else{
+    showImages = "1";
+  }
+  console.log(showImages);
+  setCookie("showImages",showImages,365);
+}
+
 function cookieHandler(){
   // cookie handler
   $('input, textarea').each(function () {
@@ -559,8 +584,7 @@ function cookieHandler(){
         else if(this.name === "ftppassword"){
           settings_ftp_password = Input.val();
           setCookie("settings_ftp_password",settings_ftp_password,365);
-        }
-        
+        }        
       }
     });
   });
@@ -568,10 +592,21 @@ function cookieHandler(){
   settings_ftp_server = getCookie("settings_ftp_username");
   settings_ftp_username = getCookie("settings_ftp_server");
   settings_ftp_password = getCookie("settings_ftp_password");
+  showImages = getCookie("showImages");
   $("#settings_username").val(username);
   $("#settings_ftp_username").val(settings_ftp_username);
   $("#settings_ftp_server").val(settings_ftp_server);
   $("#settings_ftp_password").val(settings_ftp_password);
+
+  console.log(showImages);
+  if(showImages === "1"){
+    $('#settings_imagepreview').prop('checked', true);
+  }
+  else{
+    $('#settings_imagepreview').prop('checked', false);
+  }
+
+
 }
 
 
