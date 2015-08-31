@@ -1,5 +1,6 @@
 #!/usr/bin/python
 __author__ = 'Samim.io'
+__author__ = 'Roelof (graphific)'
 
 # Imports
 import argparse
@@ -84,9 +85,34 @@ def deepdream(net, base_img, iter_n=10, octave_n=4, step_size=1.5, octave_scale=
     # returning the resulting image
     return deprocess(net, src.data[0])
 
-
+# utility function that loads an image, optionally limits
+# the size and removes an alpha channel in case there is one
+def loadImageFromUrlOrLocalPath(pathOrUrl, maxSideLength = 1920, width = -1, height = -1, previewImage = False ):
+    if 'http' in pathOrUrl:
+        file = cStringIO.StringIO(urllib.urlopen(pathOrUrl).read())
+        png = PIL.Image.open(file)
+    else: 
+        png = PIL.Image.open(pathOrUrl)
+    s = png.size
+    if width > 0 and height > 0:
+    	png = png.resize([width,height], PIL.Image.ANTIALIAS)
+    elif ( np.max(s) > maxSideLength ):
+        ratio = float(maxSideLength)/float(np.max(s))
+        png = png.resize([int(s[0]*ratio), int(s[1]*ratio)], PIL.Image.ANTIALIAS)
+    
+    if png.mode == 'RGBA':
+        src = PIL.Image.new("RGB", png.size, (255, 255, 255))
+        src.paste(png, mask=png.split()[3])
+    else:
+        src = png
+        
+    img = np.float32(src)
+    if previewImage is True:
+        showarray(img)
+        
+    return img
+    
 # Animaton functions
-
 def resizePicture(image, width):
     img = PIL.Image.open(image)
     basewidth = width
@@ -175,20 +201,20 @@ def main(inputdir, outputdir, preview, octaves, octave_scale, iterations, jitter
             vids.append(frame)
 
     fullpath = inputdir + '/' + vids[0]
-    img = PIL.Image.open(fullpath)
+    img = loadImageFromUrlOrLocalPath(fullpath)
 
     if preview is not 0:
-        img = resizePicture(fullpath, preview)
+        img = loadImageFromUrlOrLocalPath(fullpath, maxSideLength=preview)
     frame = np.float32(img)
 
 
     # guide
     if guide is not None:
-        guideimg = PIL.Image.open(inputdir + '/' + guide)
+        
         if not preview == 0:
-            guideimgresized = resizePicture(inputdir + '/' + guide, preview)
+            guideimgresized = loadImageFromUrlOrLocalPath(fullpath, maxSideLength=preview)
         else:
-            guideimgresized = guideimg.resize((224, 224), PIL.Image.ANTIALIAS)
+            guideimgresized = loadImageFromUrlOrLocalPath(fullpath, width=224, height=224)
         guide = np.float32(guideimgresized)
         end = layers[0]  # 'inception_3b/output'
         h, w = guide.shape[:2]
@@ -234,9 +260,9 @@ def main(inputdir, outputdir, preview, octaves, octave_scale, iterations, jitter
 
         # optical flow
         if not preview == 0:
-            img = np.float32(resizePicture(inputdir + '/' + vids[0], preview))
+            img = loadImageFromUrlOrLocalPath(inputdir + '/' + vids[0], maxSideLength=preview)
         else:
-            img = np.float32(PIL.Image.open(inputdir + '/' + vids[0]))
+            img = loadImageFromUrlOrLocalPath(inputdir + '/' + vids[0])
         h, w, c = img.shape
         hallu = getFrame(net, img, layers[0])
         np.clip(hallu, 0, 255, out=hallu)
@@ -252,9 +278,9 @@ def main(inputdir, outputdir, preview, octaves, octave_scale, iterations, jitter
                 endparam = layers[var_counter % len(layers)]
 
                 if not preview == 0:
-                    img = np.float32(resizePicture(newframe, preview))
+                    img = loadImageFromUrlOrLocalPath(newframe, maxSideLength=preview)
                 else:
-                    img = np.float32(PIL.Image.open(newframe))
+                    img = loadImageFromUrlOrLocalPath(newframe)
                 grayImg = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
                 flow = cv2.calcOpticalFlowFarneback(previousGrayImg, grayImg, pyr_scale=0.5, levels=3, winsize=15,
                                                     iterations=3, poly_n=5, poly_sigma=1.2, flags=0)
@@ -377,3 +403,4 @@ if __name__ == "__main__":
     else:
         main(args.input, args.output, args.preview, args.octaves, args.octavescale, args.iterations, args.jitter,
              args.zoom, args.stepsize, args.blend, args.layers, args.guide, args.gpu, args.flow)
+
