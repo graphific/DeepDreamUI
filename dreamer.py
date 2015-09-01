@@ -146,7 +146,7 @@ def writeToLog(msg):
         
 
 def main(inputdir, outputdir, preview, octaves, octave_scale, iterations, jitter, zoom, stepsize, blend, layers, guide,
-         gpu, flow):
+         gpu, flow, network):
 
     # input var setup
     make_sure_path_exists(inputdir)
@@ -396,6 +396,7 @@ if __name__ == "__main__":
     parser.add_argument('-flow', '--flow', help='Optical Flow.', type=int, required=False)
     parser.add_argument('-gpu', '--gpu', help='Use GPU (1+) or CPU (0).', type=int, required=False)
     parser.add_argument('-f', '--framerate', help='Video creation Framerate.', type=int, required=False)
+    parser.add_argument('-n', '--network', help='Network to use (default googlenet places)', type=str, required=False)
 
     args = parser.parse_args()
 
@@ -411,5 +412,5 @@ if __name__ == "__main__":
         createVideo(args.input, args.output, framerate)
     else:
         main(args.input, args.output, args.preview, args.octaves, args.octavescale, args.iterations, args.jitter,
-             args.zoom, args.stepsize, args.blend, args.layers, args.guide, args.gpu, args.flow)
+             args.zoom, args.stepsize, args.blend, args.layers, args.guide, args.gpu, args.flow, args.network)
 
