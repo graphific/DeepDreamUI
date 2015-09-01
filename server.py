@@ -94,6 +94,34 @@ def api_renderstop():
     newproc.terminate();
     return 'killed'
 
+# Start stylenet renderer
+@app.route('/api/v1.0/getstyle', methods=['POST'])
+def api_style():
+    global newproc2
+
+    content = request.json['content'] 
+    style = request.json['style'] 
+    output = request.json['output']
+    imagesize = request.json['imagesize']
+    gpu = request.json['gpu']
+    numiterations = request.json['numiterations']
+    saveiter = request.json['saveiter']
+    contentweight = request.json['contentweight']
+    styleweight = request.json['styleweight']
+
+    print "StyleNet Start"
+    command = 'python stylenet.py --content '+str(preview)+' --style '+str(style)+' --output '+str(output)+' --imagesize '+str(imagesize)+' --gpu '+str(gpu)+' --numiterations '+str(numiterations)+' --saveiter '+str(saveiter)+' --contentweight '+str(contentweight)+' --styleweight '+str(styleweight)+''
+    newproc2 = subprocess.Popen("exec " + command, stdout=subprocess.PIPE, shell=True)
+    return 'running'
+
+# Stop stylenet renderer
+@app.route('/api/v1.0/stopstyle', methods=['POST'])
+def api_stylestop():
+    print "StyleNet KILL"
+    newproc2.kill()
+    newproc2.terminate();
+    return 'killed'
+    
 # Show console
 @app.route('/api/v1.0/getconsole', methods=['POST'])
 def api_console():
