@@ -26,7 +26,7 @@ var params_view = {
   }
 };
 var selectedFiles = [];
-var maxImageView = 200;
+var maxImageView = 1;
 var username;
 var settings_ftp_username;
 var settings_ftp_server;
@@ -217,7 +217,7 @@ function get_directory(id,type,startimage,append) {
           if(type === "input"){ 
             var newimg;
             if(showImages == "1"){
-              newimg ='<div class="input_img_container"><img title="'+data.files[i]+'" class="input_img frame_input" src="'+ data.files[i] +'?'+timestamp+' " /></div>';
+              newimg ='<div class="input_img_container"><img title="'+data.files[i]+'" class="input_img frame_input" src="'+ data.files[i] + ' " /></div>';
             }
             else{
               newimg ='<div class="input_img_container"><img title="'+data.files[i]+'" class="input_img frame_input" /></div>';
@@ -228,7 +228,8 @@ function get_directory(id,type,startimage,append) {
           if(type === "output"){ 
             var newimg;
             if(showImages == "1"){
-              newimg ='<div class="input_img_container"><img title="'+data.files[i]+'" class="input_img frame_output" src="'+ data.files[i] +'?'+timestamp+' " /></div>';
+              newimg ='<div class="input_img_container"><img title="'+data.files[i]+'" class="input_img frame_output" src="'+ data.files[i] +' " /></div>'; 
+              // +'?'+timestamp
             }
             else{
               newimg ='<div class="input_img_container"><img title="'+data.files[i]+'" class="input_img frame_output" /></div>';
@@ -518,7 +519,7 @@ function setupForm(){
 
   // gpu
   $("#params_gpu").empty();
-  for(var i = 0; i <= 1; i++) {
+  for(var i = 0; i <= 3; i++) {
     var selected = ''
     if(i === params_view.params.gpu ){selected = 'selected'}
     $("#params_gpu").append('<option '+selected+' value="'+i+'">'+i+'</option>');
@@ -655,11 +656,11 @@ $(function(){
       jQuery.get('static/render.log?t='+ timestamp, function(data) {
         $("#output_console").val(data); 
         if( data.indexOf('Finished') === -1){
-          setTimeout(function(){
-            var textarea = document.getElementById('output_console');
-            textarea.scrollTop = textarea.scrollHeight + 100;  
-            get_directory(params_view.params.output,"output",0,0);
-          },200);
+          // setTimeout(function(){
+          //   var textarea = document.getElementById('output_console');
+          //   textarea.scrollTop = textarea.scrollHeight + 100;  
+          //   get_directory(params_view.params.output,"output",0,0);
+          // },200);
         }
         else{
           get_directory(params_view.params.output,"output",0,0);
