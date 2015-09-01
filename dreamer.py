@@ -17,6 +17,8 @@ import PIL.Image
 from google.protobuf import text_format
 import caffe
 
+jpg_quality = 95
+
 # a couple of utility functions for converting to and from Caffe's input image layout
 def preprocess(net, img):
     return np.float32(np.rollaxis(img, 2)[::-1]) - net.transformer.mean['data']
@@ -161,19 +163,26 @@ def main(inputdir, outputdir, preview, octaves, octave_scale, iterations, jitter
     if layers is None: layers = ['inception_4c/output']
     if gpu is None: gpu = 1
     if flow is None: flow = 0
+    if network is None: network = 'googlelenet'
     # net.blobs.keys()
 
     writeToLog("DeepDream Start" + '\n'+ '\n')
 
     # Loading DNN model
-    model_name = 'bvlc_googlenet'
-    model_path = '../../caffe/models/' + model_name + '/'
-    net_fn = model_path + 'deploy.prototxt'
-    param_fn = model_path + 'bvlc_googlenet.caffemodel'
+    if network is 'placesnet':
+        model_name = 'bvlc_googlenet'
+        model_path = '../../caffe/models/' + model_name + '/'
+        net_fn = model_path + 'deploy.prototxt'
+        param_fn = model_path + 'bvlc_googlenet.caffemodel'
+    else:
+        model_name = 'googlenet_places205'
+        model_path = '../../caffe/models/' + model_name + '/'
+        net_fn = model_path + 'deploy_places205.protxt'
+        param_fn = model_path + 'googlelet_places205_train_iter_2400000.caffemodel'
 
-    if gpu is 1:
+    if gpu > 0:
         caffe.set_mode_gpu()
-        caffe.set_device(0)
+        caffe.set_device(gpu-1)
 
     # Patching model to be able to compute gradients.
     # Note that you can also manually add "force_backward: true" line to "deploy.prototxt".
@@ -266,7 +275,7 @@ def main(inputdir, outputdir, preview, octaves, octave_scale, iterations, jitter
         h, w, c = img.shape
         hallu = getFrame(net, img, layers[0])
         np.clip(hallu, 0, 255, out=hallu)
-        PIL.Image.fromarray(np.uint8(hallu)).save(outputdir + '/' + 'frame_000000.png')
+        PIL.Image.fromarray(np.uint8(hallu)).save(outputdir + '/' + 'frame_000000.jpg',quality=jpg_quality)
         grayImg = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
         for v in range(len(vids)):
             if var_counter < len(vids):
@@ -295,11 +304,11 @@ def main(inputdir, outputdir, preview, octaves, octave_scale, iterations, jitter
                 hallu = getFrame(net, hallu, endparam)
                 later = time.time()
                 difference = int(later - now)
-                saveframe = outputdir + '/' + 'frame_%06d.png' % (var_counter)
+                saveframe = outputdir + '/' + 'frame_%06d.jpg' % (var_counter)
                 getStats(saveframe, var_counter, vids, difference)
 
                 np.clip(hallu, 0, 255, out=hallu)
-                PIL.Image.fromarray(np.uint8(hallu)).save(saveframe)
+                PIL.Image.fromarray(np.uint8(hallu)).save(saveframe,quality=jpg_quality)
                 var_counter += 1
             else:
                 writeToLog('Finished processing all frames'+ '\n')
@@ -319,11 +328,11 @@ def main(inputdir, outputdir, preview, octaves, octave_scale, iterations, jitter
                 frame = getFrame(net, frame, endparam)
                 later = time.time()
                 difference = int(later - now)
-                saveframe = outputdir + '/' + 'frame_%06d.png' % (var_counter)
+                saveframe = outputdir + '/' + 'frame_%06d.jpg' % (var_counter)
                 getStats(saveframe, var_counter, vids, difference)
 
                 # save image
-                PIL.Image.fromarray(np.uint8(frame)).save(saveframe)
+                PIL.Image.fromarray(np.uint8(frame)).save(saveframe,quality=jpg_quality)
 
                 # setup next image
                 newframe = inputdir + '/' + vids[v + 1]
@@ -358,7 +367,7 @@ def extractVideo(inputdir, outputdir):
 def createVideo(inputdir, outputdir, framerate):
     writeToLog("Creating Video: " + inputdir + " To: " + outputdir)
 
-    command = 'ffmpeg -r ' + str(framerate) + ' -f image2 -i "' + inputdir + '/frame_%6d.png" -c:v libx264 -crf 20 -pix_fmt yuv420p -tune fastdecode -tune zerolatency -profile:v baseline ' + outputdir
+    command = 'ffmpeg -r ' + str(framerate) + ' -f image2 -i "' + inputdir + '/frame_%6d.jpg" -c:v libx264 -crf 20 -pix_fmt yuv420p -tune fastdecode -tune zerolatency -profile:v baseline ' + outputdir
     proc = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True, universal_newlines=True)
     while proc.poll() is None:
         line = proc.stdout.readline()
@@ -385,7 +394,7 @@ if __name__ == "__main__":
     parser.add_argument('-c', '--create', help='Create Video From Frames.', type=int, required=False)
     parser.add_argument('-g', '--guide', help='Guided dream image input.', type=str, required=False)
     parser.add_argument('-flow', '--flow', help='Optical Flow.', type=int, required=False)
-    parser.add_argument('-gpu', '--gpu', help='Use GPU or CPU.', type=int, required=False)
+    parser.add_argument('-gpu', '--gpu', help='Use GPU (1+) or CPU (0).', type=int, required=False)
     parser.add_argument('-f', '--framerate', help='Video creation Framerate.', type=int, required=False)
 
     args = parser.parse_args()
