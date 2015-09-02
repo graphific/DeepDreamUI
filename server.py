@@ -23,6 +23,8 @@ from os.path import isfile, join
 from os import path
 import subprocess
 
+os.environ['GLOG_minloglevel'] = '2' 
+
 reload(sys)
 sys.setdefaultencoding("utf-8")
 
@@ -46,7 +48,8 @@ ALLOWED_EXTENSIONS = set(['mov', 'mp4', 'png', 'jpg', 'jpeg', 'gif'])
 cors = CORS(app)
 app.config['CORS_HEADERS'] = 'Content-Type'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-newproc = None
+
+procArray = []
 
 # Main template
 @app.route('/')
@@ -56,8 +59,8 @@ def index(text_input= "", text_output= ""):
 # Start deepdream renderer
 @app.route('/api/v1.0/getrender', methods=['POST'])
 def api_render():
-    global newproc
-
+    global procArray
+    print request.json
     presets = request.json['presets'] #low, medium, high
     network = request.json['network'] 
     layers = request.json['layers']
@@ -72,26 +75,40 @@ def api_render():
     guide = request.json['guide']
     inputdir = request.json['input']
     outputdir = request.json['output']
+    author = request.json['author']
+    renderstop(author)
 
     finalguide = ''
     if len(guide) != 0:
         finalguide = '--guide ' + str(guide) 
 
-    preview = 0
-    if presets == 'low': preview = 80
-    elif presets == 'medium': preview = 360
+    preview = 96
+    if presets == 'low': preview = 20
+    elif presets == 'medium': preview = 50
 
     print "DeepDream Start"
     command = 'python dreamer.py --preview '+str(preview)+' --input '+str(inputdir)+' --output '+str(outputdir)+' --octaves '+str(octaves)+' --octavescale '+str(octavescale)+' --iterations '+str(itterations)+' --jitter '+str(jitter)+' --stepsize '+str(stepsize)+' --blend '+str(blend)+' --layers '+str(layers)+' --gpu '+str(gpu)+' --flow '+str(opticalflow)+' --network '+str(network)+' '+finalguide+''
     newproc = subprocess.Popen("exec " + command, stdout=subprocess.PIPE, shell=True)
+    newProcEntry = [newproc,author]
+    procArray.append(newProcEntry)
+    print procArray
     return 'running'
+
+def renderstop(author):
+    global procArray
+
+    for proc in procArray:
+        if(proc[1] == author):
+            proc[0].kill()
+            proc[0].terminate();
+            procArray.remove(proc)
+            print "DeepDream KILL"
+    print procArray
 
 # Stop deepdream renderer
 @app.route('/api/v1.0/stoprender', methods=['POST'])
 def api_renderstop():
-    print "DeepDream KILL"
-    newproc.kill()
-    newproc.terminate();
+    renderstop(request.json['author'])
     return 'killed'
 
 # Start stylenet renderer

@@ -16,7 +16,9 @@ import scipy.ndimage as nd
 import PIL.Image
 from google.protobuf import text_format
 import caffe
+import math
 
+os.environ['GLOG_minloglevel'] = '2' 
 jpg_quality = 95
 
 # a couple of utility functions for converting to and from Caffe's input image layout
@@ -33,6 +35,7 @@ def objective_L2(dst):
 
 
 # First we implement a basic gradient ascent step function, applying the first two tricks // 32:
+#def make_step(net, step_size=1.5, end='inception_4c/output', jitter=32, clip=True, objective=objective_L2, dropTop = 0, keep = 1, keepFactor = 1.0, gamma = 4.0, suppressFactor = 0.000001, keepIndices = None):
 def make_step(net, step_size=1.5, end='inception_4c/output', jitter=32, clip=True, objective=objective_L2):
     '''Basic gradient ascent step.'''
 
@@ -43,6 +46,36 @@ def make_step(net, step_size=1.5, end='inception_4c/output', jitter=32, clip=Tru
     src.data[0] = np.roll(np.roll(src.data[0], ox, -1), oy, -2)  # apply jitter shift
 
     net.forward(end=end)
+    
+    """v = []
+    if (keepIndices is None):
+        for i in range( 0, len(dst.data[0])):
+            v.append( np.sum(dst.data[0][i]))
+        keepIndices = np.array(np.argpartition(v, -(keep+dropTop))[-(keep+dropTop):][:keep])
+
+    if not (keepIndices is None):
+        for i in range( len(dst.data[0])):
+            if i in keepIndices:
+                dstmax = dst.data[0][i].max() * keepFactor
+                if dstmax > 0.0:
+                    #if invert is True:
+                    #    dst.data[0][i] = pow(1.0-dst.data[0][i]/dstmax,gamma) * dstmax
+                    #else:
+                    dst.data[0][i] = pow(dst.data[0][i]/dstmax,gamma) * dstmax
+            else:
+                dstmax = dst.data[0][i].max()
+                if dstmax > 0.0:
+                    dst.data[0][i] *= suppressFactor / dstmax
+    else:
+        for i in range( len(dst.data[0])):
+            dstmax = dst.data[0][i].max()
+            if dstmax > 0 and gamma != 1.0:
+                #if invert is True:
+                #    dst.data[0][i] = pow(1.0-dst.data[0][i]/dstmax,gamma) * dstmax
+                #else:
+                dst.data[0][i] = pow(dst.data[0][i]/dstmax,gamma) * dstmax
+    """
+
     objective(dst)  # specify the optimization objective
     net.backward(start=end)
     g = src.diff[0]
@@ -53,8 +86,14 @@ def make_step(net, step_size=1.5, end='inception_4c/output', jitter=32, clip=Tru
     if clip:
         bias = net.transformer.mean['data']
         src.data[:] = np.clip(src.data, -bias, 255 - bias)
+    #return keepIndices
 
-
+"""def deepdream(net, base_img, iter_n=10, octave_n=4, step_size=1.5, octave_scale=1.4, jitter=32,
+              recalculateKeepEachOctave = False,
+              keep = 2, dropTop=0, keepFactor = 1.0, 
+              gamma = 1.0, suppressFactor = 0.0, keepIndices = None,
+              end='inception_4c/output', clip=True, **step_params):
+"""
 def deepdream(net, base_img, iter_n=10, octave_n=4, step_size=1.5, octave_scale=1.4, jitter=32,
               end='inception_4c/output', clip=True, **step_params):
     # prepare base images for all octaves
@@ -76,6 +115,16 @@ def deepdream(net, base_img, iter_n=10, octave_n=4, step_size=1.5, octave_scale=
         for i in xrange(iter_n):
             make_step(net, end=end, step_size=step_size, jitter=jitter, clip=clip, **step_params)
 
+            """keepIndices = make_step(net, end=end, step_size=step_size, jitter=jitter, clip=clip, keepFactor = keepFactor, gamma = gamma,
+                      keep = keep, dropTop = dropTop,
+                      suppressFactor = suppressFactor,
+                      keepIndices = keepIndices, **step_params)
+            if recalculateKeepEachOctave is True:
+                keepIndices = None
+            if i is 2 and math.isnan(vis.mean()):
+                return deprocess(net, src.data[0]),keepIndices
+            """
+            keepIndices = "all"
             # visualization
             vis = deprocess(net, src.data[0])
             if not clip:  # adjust image contrast if clipping is disabled
@@ -85,7 +134,7 @@ def deepdream(net, base_img, iter_n=10, octave_n=4, step_size=1.5, octave_scale=
         # extract details produced on the current octave
         detail = src.data[0] - octave_base
     # returning the resulting image
-    return deprocess(net, src.data[0])
+    return deprocess(net, src.data[0]),keepIndices
 
 # utility function that loads an image, optionally limits
 # the size and removes an alpha channel in case there is one
@@ -108,11 +157,11 @@ def loadImageFromUrlOrLocalPath(pathOrUrl, maxSideLength = 1920, width = -1, hei
     else:
         src = png
         
-    img = np.float32(src)
+    #img = np.float32(src)
     if previewImage is True:
-        showarray(img)
+        showarray(np.float32(src))
         
-    return img
+    return src
     
 # Animaton functions
 def resizePicture(image, width):
@@ -166,10 +215,10 @@ def main(inputdir, outputdir, preview, octaves, octave_scale, iterations, jitter
     if network is None: network = 'googlelenet'
     # net.blobs.keys()
 
-    writeToLog("DeepDream Start" + '\n'+ '\n')
+    writeToLog("DeepDream Start with " + network + '\n'+ '\n')
 
     # Loading DNN model
-    if network is 'placesnet':
+    if 'googlelenet' in network:
         model_name = 'bvlc_googlenet'
         model_path = '../../caffe/models/' + model_name + '/'
         net_fn = model_path + 'deploy.prototxt'
@@ -179,7 +228,7 @@ def main(inputdir, outputdir, preview, octaves, octave_scale, iterations, jitter
         model_path = '../../caffe/models/' + model_name + '/'
         net_fn = model_path + 'deploy_places205.protxt'
         param_fn = model_path + 'googlelet_places205_train_iter_2400000.caffemodel'
-
+    writeToLog(model_path)
     if gpu > 0:
         caffe.set_mode_gpu()
         caffe.set_device(gpu-1)
@@ -272,8 +321,9 @@ def main(inputdir, outputdir, preview, octaves, octave_scale, iterations, jitter
             img = loadImageFromUrlOrLocalPath(inputdir + '/' + vids[0], maxSideLength=preview)
         else:
             img = loadImageFromUrlOrLocalPath(inputdir + '/' + vids[0])
+        img = np.float32(img)
         h, w, c = img.shape
-        hallu = getFrame(net, img, layers[0])
+        hallu,keepIndices = getFrame(net, img, layers[0])
         np.clip(hallu, 0, 255, out=hallu)
         PIL.Image.fromarray(np.uint8(hallu)).save(outputdir + '/' + 'frame_000000.jpg',quality=jpg_quality)
         grayImg = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
@@ -281,6 +331,7 @@ def main(inputdir, outputdir, preview, octaves, octave_scale, iterations, jitter
             if var_counter < len(vids):
                 previousImg = img
                 previousGrayImg = grayImg
+                previoushallu = hallu
 
                 newframe = inputdir + '/' + vids[v + 1]
                 writeToLog( 'Processing: ' + str(newframe) + '\n')
@@ -290,6 +341,7 @@ def main(inputdir, outputdir, preview, octaves, octave_scale, iterations, jitter
                     img = loadImageFromUrlOrLocalPath(newframe, maxSideLength=preview)
                 else:
                     img = loadImageFromUrlOrLocalPath(newframe)
+                img = np.float32(img)
                 grayImg = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
                 flow = cv2.calcOpticalFlowFarneback(previousGrayImg, grayImg, pyr_scale=0.5, levels=3, winsize=15,
                                                     iterations=3, poly_n=5, poly_sigma=1.2, flags=0)
@@ -301,14 +353,19 @@ def main(inputdir, outputdir, preview, octaves, octave_scale, iterations, jitter
                 hallu = img + halludiff
 
                 now = time.time()
-                hallu = getFrame(net, hallu, endparam)
+                hallu,keepIndices = getFrame(net, hallu, endparam)
                 later = time.time()
                 difference = int(later - now)
                 saveframe = outputdir + '/' + 'frame_%06d.jpg' % (var_counter)
                 getStats(saveframe, var_counter, vids, difference)
 
                 np.clip(hallu, 0, 255, out=hallu)
+                
+                #if not blend == 0:
+                #    hallu = morphPicture(PIL.Image.fromarray(np.uint8(previoushallu)), PIL.Image.fromarray(np.uint8(hallu)), blend, preview)
+ 
                 PIL.Image.fromarray(np.uint8(hallu)).save(saveframe,quality=jpg_quality)
+                writeToLog( 'channels used:: ' + str(keepIndices) + '\n') 
                 var_counter += 1
             else:
                 writeToLog('Finished processing all frames'+ '\n')
@@ -325,7 +382,7 @@ def main(inputdir, outputdir, preview, octaves, octave_scale, iterations, jitter
                 # setup
                 now = time.time()
                 endparam = layers[var_counter % len(layers)]
-                frame = getFrame(net, frame, endparam)
+                frame,keepIndices = getFrame(net, frame, endparam)
                 later = time.time()
                 difference = int(later - now)
                 saveframe = outputdir + '/' + 'frame_%06d.jpg' % (var_counter)
@@ -339,12 +396,22 @@ def main(inputdir, outputdir, preview, octaves, octave_scale, iterations, jitter
 
                 #blend 0.1 is keep 10%, 0.9 = keep 90% of prev picture
                 if not blend == 0:
-                    frame = morphPicture(newframe, saveframe, blend, preview)
+                    #if preview is not 0:
+                    #img2 = resizePicture(filename2, preview)
+                    frame = PIL.Image.blend(loadImageFromUrlOrLocalPath(newframe), loadImageFromUrlOrLocalPath(saveframe), blend)
+
+                    #frame = morphPicture(newframe, saveframe, blend, preview)
                 else:
-                    frame = PIL.Image.open(newframe)
+                    frame = loadImageFromUrlOrLocalPath(newframe)
+
+                #if not blend == 0:
+                #    frame = morphPicture(PIL.Image.fromarray(np.uint8(loadImageFromUrlOrLocalPath(newframe))), PIL.Image.fromarray(np.uint8(loadImageFromUrlOrLocalPath(saveframe))), blend, preview)
+                #else:
+                #    frame = loadImageFromUrlOrLocalPath(newframe)
 
                 # setup next frame
                 frame = np.float32(frame)
+                writeToLog( 'channels used:: ' + str(keepIndices) + '\n')
                 var_counter += 1
             else:
                 writeToLog('Finished processing all frames'+ '\n')
@@ -411,6 +478,9 @@ if __name__ == "__main__":
         if args.framerate is not None: framerate = args.framerate
         createVideo(args.input, args.output, framerate)
     else:
-        main(args.input, args.output, args.preview, args.octaves, args.octavescale, args.iterations, args.jitter,
+        if not args.preview is None: # len(args.preview) > 1:
+            jpg_quality = args.preview
+
+        main(args.input, args.output, 0, args.octaves, args.octavescale, args.iterations, args.jitter,
              args.zoom, args.stepsize, args.blend, args.layers, args.guide, args.gpu, args.flow, args.network)
 
