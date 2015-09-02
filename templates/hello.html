@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>DeepDream UI</title>
+    <title>DeepAnim UI</title>
     <meta charset="utf-8">
     <meta content="initial-scale=1, minimum-scale=1, width=device-width" name="viewport">
 
@@ -25,7 +25,7 @@
 
       <br/>
       <ul class="nav nav-tabs">
-        <li class="active"><a data-toggle="tab" id="tab_home" href="#home"><span class="glyphicon glyphicon-facetime-video" aria-hidden="true"></span> <strong>DeepDream UI</strong></a></a></li>
+        <li class="active"><a data-toggle="tab" id="tab_home" href="#home"><span class="glyphicon glyphicon-facetime-video" aria-hidden="true"></span> <strong>DeepAnim UI</strong></a></a></li>
         <li><a data-toggle="tab" id="tab_console" href="#console"><span class="glyphicon glyphicon-list-alt" aria-hidden="true"></span> Console</a></li>
         <li><a data-toggle="tab" id="tab_jobs" href="#jobs"><span class="glyphicon glyphicon-file" aria-hidden="true"></span> Jobs</a></li>
         <li><a data-toggle="tab" id="tab_settings" href="#settings"><span class="glyphicon glyphicon-edit" aria-hidden="true"></span> Settings</a></li>
@@ -43,7 +43,7 @@
 
           <h4>Layers</h4>
 
-          <img alt="" title="" src="static/img/help/frame_0_delay-0.75s.gif" />
+          <!-- <img alt="" title="" src="static/img/help/frame_0_delay-0.75s.gif" />
           <img alt="" title="" src="static/img/help/frame_1_delay-0.75s.gif" />
           <img alt="" title="" src="static/img/help/frame_2_delay-0.75s.gif" />
           <img alt="" title="" src="static/img/help/frame_3_delay-0.75s.gif" />
@@ -131,8 +131,8 @@
           <img alt="" title="" src="static/img/help/frame_78_delay-0.75s.gif" />
           <img alt="" title="" src="static/img/help/frame_79_delay-0.75s.gif" />
 
-          <img alt="" title="" src="static/img/help/frame_80_delay-0.75s.gif" />
-
+          <img alt="" title="" src="static/img/help/frame_80_delay-0.75s.gif" /> -->
+   
         </div>
 
         <div id="settings" class="tab-pane fade">
@@ -297,6 +297,16 @@
                 <label class="control-label col-sm-3" for="inputSuccess3">GPU</label>
                 <div class="col-sm-9">
                   <select class="form-control input-sm" id="params_gpu"></select>
+                </div>
+
+                <label class="control-label col-sm-3" for="inputSuccess3">SU-Keep</label>
+                <div class="col-sm-9">
+                  <select class="form-control input-sm" id="params_su_keep"></select>
+                </div>
+
+                <label class="control-label col-sm-3" for="inputSuccess3">SU-Drop</label>
+                <div class="col-sm-9">
+                  <select class="form-control input-sm" id="params_su_droptop"></select>
                 </div>
 
               </div>

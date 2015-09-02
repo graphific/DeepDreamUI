@@ -19,6 +19,8 @@ var params_view = {
     opticalflow: 1,
     guide: "",
     gpu: 1,
+    sukeep:0,
+    sudroptop:0,
     input:"static/input/mydir/",
     output:"static/output/mydir/",
     author:"authorname",
@@ -27,6 +29,7 @@ var params_view = {
 };
 var selectedFiles = [];
 var maxImageView = 1;
+var maxImageView2 = 80;
 var username;
 var settings_ftp_username;
 var settings_ftp_server;
@@ -201,6 +204,9 @@ function get_directory(id,type,startimage,append) {
       var vidAmount = data.files.length;
       var foundimgcount = data.files.length;
       vidAmount = maxImageView;
+      if(type === "output"){
+        vidAmount = maxImageView2;
+      }
       vidStart = startimage;
 
       var check = vidStart+vidAmount;
@@ -250,7 +256,7 @@ function get_directory(id,type,startimage,append) {
 	      }
 	      else if(type === "output"){ 
 	      	$('<div class="data_img loadmore">LOAD MORE</div>').click(function(){ 
-	      		vidStart+=maxImageView;
+	      		vidStart+=maxImageView2;
 	      		get_directory(params_view.params.output,"output",vidStart,1); 
 	      		this.remove();
 	      	}).appendTo("#container_output");
@@ -345,7 +351,6 @@ function load_job(jobId){
     $("#params_jitter option").filter(function() { return $(this).text() == params_view.params.jitter; }).prop('selected', true);
     $("#params_stepsize option").filter(function() { return $(this).text() == params_view.params.stepsize; }).prop('selected', true);
     $("#params_blend option").filter(function() { return $(this).text() == params_view.params.blend; }).prop('selected', true);
-    $("#params_blend option").filter(function() { return $(this).text() == params_view.params.blend; }).prop('selected', true);
     $("#params_opticalflow option").filter(function() { return $(this).text() == params_view.params.opticalflow; }).prop('selected', true);
     $("#params_guide").val(params_view.params.guide);
     $("#params_gpu option").filter(function() { return $(this).text() == params_view.params.gpu; }).prop('selected', true);
@@ -436,14 +441,16 @@ function setupForm(){
   for(var i = 0; i < params_view.params.presets.length; i++) {
     $("#params_presets").append('<option value="'+params_view.params.presets[i]+'">'+params_view.params.presets[i]+'</option>')
   }
-  $('#params_octaves').on('change', function() { params_view.params.presets = this.value;});
+  params_view.params.presets = params_view.params.presets[0];
+  $('#params_presets').on('change', function() { params_view.params.presets = this.value;});
 
   // network
   $("#params_network").empty();
   for(var i = 0; i < params_view.params.network.length; i++) {
     $("#params_network").append('<option value="'+params_view.params.network[i]+'">'+params_view.params.network[i]+'</option>')
   }
-  $('#params_octaves').on('change', function() { params_view.params.network = this.value;});
+  params_view.params.network = params_view.params.network[0];
+  $('#params_network').on('change', function() { params_view.params.network = this.value;});
 
   // layers
   $("#params_layers").val(params_view.params.layers);
@@ -497,10 +504,10 @@ function setupForm(){
 
   // blend
   $("#params_blend").empty();
-  for(var i = 1; i <= 10; i++) {
+  for(var i = 0; i <= 100; i++) {
     var selected = ''
-    if(i === (params_view.params.blend*10) ){selected = 'selected'}
-    $("#params_blend").append('<option '+selected+' value="'+i/10+'">'+i/10+'</option>');
+    if(i === (params_view.params.blend*100) ){selected = 'selected'}
+    $("#params_blend").append('<option '+selected+' value="'+i/100+'">'+i/100+'</option>');
   }
   $('#params_blend').on('change', function() { params_view.params.blend = this.value;});
 
@@ -526,6 +533,25 @@ function setupForm(){
   }
   $('#params_gpu').on('change', function() { params_view.params.gpu = this.value;});
 
+
+  // Single Unit: keep
+  $("#params_su_keep").empty();
+  for(var i = 0; i <= 100; i++) {
+    var selected = ''
+    if(i === (params_view.params.sukeep) ){selected = 'selected'}
+    $("#params_su_keep").append('<option '+selected+' value="'+i+'">'+i+'</option>');
+  }
+  $('#params_su_keep').on('change', function() { params_view.params.sukeep = this.value;});
+
+
+   // Single Unit: keep
+  $("#params_su_droptop").empty();
+  for(var i = 0; i <= 30; i++) {
+    var selected = ''
+    if(i === (params_view.params.sudroptop) ){selected = 'selected'}
+    $("#params_su_droptop").append('<option '+selected+' value="'+i+'">'+i+'</option>');
+  }
+  $('#params_su_droptop').on('change', function() { params_view.params.sudroptop = this.value;});
 }
 
 
@@ -629,7 +655,6 @@ $(function(){
   // start renderer
   $("#render_final").click(function(event) {
     event.preventDefault(); 
-    get_render();
 
     // save params file
     params_view.params.jobname = "Parameters";
@@ -637,6 +662,8 @@ $(function(){
     params_view.params.author = username;
     params_view.params.network = $('#params_network').find(":selected").text();
     params_view.params.presets = $('#params_presets').find(":selected").text();
+    
+    get_render();
 
     $.ajax({
       type: "POST",

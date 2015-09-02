@@ -35,8 +35,8 @@ def objective_L2(dst):
 
 
 # First we implement a basic gradient ascent step function, applying the first two tricks // 32:
-#def make_step(net, step_size=1.5, end='inception_4c/output', jitter=32, clip=True, objective=objective_L2, dropTop = 0, keep = 1, keepFactor = 1.0, gamma = 4.0, suppressFactor = 0.000001, keepIndices = None):
-def make_step(net, step_size=1.5, end='inception_4c/output', jitter=32, clip=True, objective=objective_L2):
+def make_step(net, step_size=1.5, end='inception_4c/output', jitter=32, clip=True, objective=objective_L2, controlUnits=False, dropTop = 0, keep = 1, keepFactor = 1.0, gamma = 4.0, suppressFactor = 0.000001, keepIndices = None):
+    #def make_step(net, step_size=1.5, end='inception_4c/output', jitter=32, clip=True, objective=objective_L2):
     '''Basic gradient ascent step.'''
 
     src = net.blobs['data']  # input image is stored in Net's 'data' blob
@@ -47,34 +47,36 @@ def make_step(net, step_size=1.5, end='inception_4c/output', jitter=32, clip=Tru
 
     net.forward(end=end)
     
-    """v = []
-    if (keepIndices is None):
-        for i in range( 0, len(dst.data[0])):
-            v.append( np.sum(dst.data[0][i]))
-        keepIndices = np.array(np.argpartition(v, -(keep+dropTop))[-(keep+dropTop):][:keep])
+    if controlUnits:
+        v = []
+        if (keepIndices is None):
+            for i in range( 0, len(dst.data[0])):
+                v.append( np.sum(dst.data[0][i]))
+            keepIndices = np.array(np.argpartition(v, -(keep+dropTop))[-(keep+dropTop):][:keep])
 
-    if not (keepIndices is None):
-        for i in range( len(dst.data[0])):
-            if i in keepIndices:
-                dstmax = dst.data[0][i].max() * keepFactor
-                if dstmax > 0.0:
+        if not (keepIndices is None):
+            for i in range( len(dst.data[0])):
+                if i in keepIndices:
+                    dstmax = dst.data[0][i].max() * keepFactor
+                    if dstmax > 0.0:
+                        #if invert is True:
+                        #    dst.data[0][i] = pow(1.0-dst.data[0][i]/dstmax,gamma) * dstmax
+                        #else:
+                        dst.data[0][i] = pow(dst.data[0][i]/dstmax,gamma) * dstmax
+                else:
+                    dstmax = dst.data[0][i].max()
+                    if dstmax > 0.0:
+                        dst.data[0][i] *= suppressFactor / dstmax
+        else:
+            for i in range( len(dst.data[0])):
+                dstmax = dst.data[0][i].max()
+                if dstmax > 0 and gamma != 1.0:
                     #if invert is True:
                     #    dst.data[0][i] = pow(1.0-dst.data[0][i]/dstmax,gamma) * dstmax
                     #else:
                     dst.data[0][i] = pow(dst.data[0][i]/dstmax,gamma) * dstmax
-            else:
-                dstmax = dst.data[0][i].max()
-                if dstmax > 0.0:
-                    dst.data[0][i] *= suppressFactor / dstmax
     else:
-        for i in range( len(dst.data[0])):
-            dstmax = dst.data[0][i].max()
-            if dstmax > 0 and gamma != 1.0:
-                #if invert is True:
-                #    dst.data[0][i] = pow(1.0-dst.data[0][i]/dstmax,gamma) * dstmax
-                #else:
-                dst.data[0][i] = pow(dst.data[0][i]/dstmax,gamma) * dstmax
-    """
+        keepIndices = "all"
 
     objective(dst)  # specify the optimization objective
     net.backward(start=end)
@@ -86,16 +88,16 @@ def make_step(net, step_size=1.5, end='inception_4c/output', jitter=32, clip=Tru
     if clip:
         bias = net.transformer.mean['data']
         src.data[:] = np.clip(src.data, -bias, 255 - bias)
-    #return keepIndices
+    return keepIndices
 
-"""def deepdream(net, base_img, iter_n=10, octave_n=4, step_size=1.5, octave_scale=1.4, jitter=32,
-              recalculateKeepEachOctave = False,
+def deepdream(net, base_img, iter_n=10, octave_n=4, step_size=1.5, octave_scale=1.4, jitter=32,
+              recalculateKeepEachOctave = False, controlUnits = False,
               keep = 2, dropTop=0, keepFactor = 1.0, 
               gamma = 1.0, suppressFactor = 0.0, keepIndices = None,
               end='inception_4c/output', clip=True, **step_params):
-"""
-def deepdream(net, base_img, iter_n=10, octave_n=4, step_size=1.5, octave_scale=1.4, jitter=32,
-              end='inception_4c/output', clip=True, **step_params):
+
+    #def deepdream(net, base_img, iter_n=10, octave_n=4, step_size=1.5, octave_scale=1.4, jitter=32,
+    #          end='inception_4c/output', clip=True, **step_params):
     # prepare base images for all octaves
     octaves = [preprocess(net, base_img)]
     for i in xrange(octave_n - 1):
@@ -113,18 +115,19 @@ def deepdream(net, base_img, iter_n=10, octave_n=4, step_size=1.5, octave_scale=
         src.reshape(1, 3, h, w)  # resize the network's input image size
         src.data[0] = octave_base + detail
         for i in xrange(iter_n):
-            make_step(net, end=end, step_size=step_size, jitter=jitter, clip=clip, **step_params)
+            #make_step(net, end=end, step_size=step_size, jitter=jitter, clip=clip, **step_params)
 
-            """keepIndices = make_step(net, end=end, step_size=step_size, jitter=jitter, clip=clip, keepFactor = keepFactor, gamma = gamma,
-                      keep = keep, dropTop = dropTop,
+            keepIndices = make_step(net, end=end, step_size=step_size, jitter=jitter, clip=clip, keepFactor = keepFactor, gamma = gamma,
+                      keep = keep, dropTop = dropTop, controlUnits = controlUnits,
                       suppressFactor = suppressFactor,
                       keepIndices = keepIndices, **step_params)
-            if recalculateKeepEachOctave is True:
-                keepIndices = None
-            if i is 2 and math.isnan(vis.mean()):
-                return deprocess(net, src.data[0]),keepIndices
-            """
-            keepIndices = "all"
+            if controlUnits:
+                if recalculateKeepEachOctave is True:
+                    keepIndices = None
+                if i is 2 and math.isnan(vis.mean()):
+                    return deprocess(net, src.data[0]),keepIndices
+            
+            #keepIndices = "all"
             # visualization
             vis = deprocess(net, src.data[0])
             if not clip:  # adjust image contrast if clipping is disabled
@@ -195,7 +198,7 @@ def writeToLog(msg):
         
 
 def main(inputdir, outputdir, preview, octaves, octave_scale, iterations, jitter, zoom, stepsize, blend, layers, guide,
-         gpu, flow, network):
+         gpu, flow, network, drop, keep):
 
     # input var setup
     make_sure_path_exists(inputdir)
@@ -213,6 +216,10 @@ def main(inputdir, outputdir, preview, octaves, octave_scale, iterations, jitter
     if gpu is None: gpu = 1
     if flow is None: flow = 0
     if network is None: network = 'googlelenet'
+    if keep is 0:
+        control = False
+    else:
+        control = True
     # net.blobs.keys()
 
     writeToLog("DeepDream Start with " + network + '\n'+ '\n')
@@ -291,14 +298,14 @@ def main(inputdir, outputdir, preview, octaves, octave_scale, iterations, jitter
         A = x.T.dot(y)  # compute the matrix of dot-products with guide features
         dst.diff[0].reshape(ch, -1)[:] = y[:, A.argmax(1)]  # select ones that match best
 
-    def getFrame(net, frame, endparam):
+    def getFrame(net, frame, endparam, drop, keep, control):
         # dream frame
         if guide is None:
             return deepdream(net, frame, iter_n=iterations, step_size=stepsize, octave_n=octaves,
-                             octave_scale=octave_scale, jitter=jitter, end=endparam)
+                             octave_scale=octave_scale, jitter=jitter, end=endparam, controlUnits=control, keep=keep, dropTop=drop)
         else:
             return deepdream(net, frame, iter_n=iterations, step_size=stepsize, octave_n=octaves,
-                             octave_scale=octave_scale, jitter=jitter, end=endparam, objective=objective_guide)
+                             octave_scale=octave_scale, jitter=jitter, end=endparam, objective=objective_guide, controlUnits=control, keep=keep, dropTop=drop)
 
     def getStats(saveframe, var_counter, vids, difference):
         # Stats
@@ -323,7 +330,7 @@ def main(inputdir, outputdir, preview, octaves, octave_scale, iterations, jitter
             img = loadImageFromUrlOrLocalPath(inputdir + '/' + vids[0])
         img = np.float32(img)
         h, w, c = img.shape
-        hallu,keepIndices = getFrame(net, img, layers[0])
+        hallu,keepIndices = getFrame(net, img, layers[0], drop, keep, control)
         np.clip(hallu, 0, 255, out=hallu)
         PIL.Image.fromarray(np.uint8(hallu)).save(outputdir + '/' + 'frame_000000.jpg',quality=jpg_quality)
         grayImg = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
@@ -353,7 +360,7 @@ def main(inputdir, outputdir, preview, octaves, octave_scale, iterations, jitter
                 hallu = img + halludiff
 
                 now = time.time()
-                hallu,keepIndices = getFrame(net, hallu, endparam)
+                hallu,keepIndices = getFrame(net, hallu, endparam, drop, keep, control)
                 later = time.time()
                 difference = int(later - now)
                 saveframe = outputdir + '/' + 'frame_%06d.jpg' % (var_counter)
@@ -382,7 +389,7 @@ def main(inputdir, outputdir, preview, octaves, octave_scale, iterations, jitter
                 # setup
                 now = time.time()
                 endparam = layers[var_counter % len(layers)]
-                frame,keepIndices = getFrame(net, frame, endparam)
+                frame,keepIndices = getFrame(net, frame, endparam, drop, keep, control)
                 later = time.time()
                 difference = int(later - now)
                 saveframe = outputdir + '/' + 'frame_%06d.jpg' % (var_counter)
@@ -464,6 +471,9 @@ if __name__ == "__main__":
     parser.add_argument('-gpu', '--gpu', help='Use GPU (1+) or CPU (0).', type=int, required=False)
     parser.add_argument('-f', '--framerate', help='Video creation Framerate.', type=int, required=False)
     parser.add_argument('-n', '--network', help='Network to use (default googlenet places)', type=str, required=False)
+    
+    parser.add_argument('-d', '--drop', help='# of top units to drop (default: 0)', type=int, required=False)
+    parser.add_argument('-k', '--keep', help='# of units to use (default: 4)', type=int, required=False)
 
     args = parser.parse_args()
 
@@ -480,7 +490,7 @@ if __name__ == "__main__":
     else:
         if not args.preview is None: # len(args.preview) > 1:
             jpg_quality = args.preview
-
+        
         main(args.input, args.output, 0, args.octaves, args.octavescale, args.iterations, args.jitter,
-             args.zoom, args.stepsize, args.blend, args.layers, args.guide, args.gpu, args.flow, args.network)
+             args.zoom, args.stepsize, args.blend, args.layers, args.guide, args.gpu, args.flow, args.network, args.drop, args.keep)
 

@@ -76,18 +76,21 @@ def api_render():
     inputdir = request.json['input']
     outputdir = request.json['output']
     author = request.json['author']
+    drop = request.json['sudroptop']
+    keep = request.json['sukeep']
     renderstop(author)
 
     finalguide = ''
     if len(guide) != 0:
-        finalguide = '--guide ' + str(guide) 
+        finalguide = '--guide ' + str(guide)
 
     preview = 96
     if presets == 'low': preview = 20
     elif presets == 'medium': preview = 50
 
     print "DeepDream Start"
-    command = 'python dreamer.py --preview '+str(preview)+' --input '+str(inputdir)+' --output '+str(outputdir)+' --octaves '+str(octaves)+' --octavescale '+str(octavescale)+' --iterations '+str(itterations)+' --jitter '+str(jitter)+' --stepsize '+str(stepsize)+' --blend '+str(blend)+' --layers '+str(layers)+' --gpu '+str(gpu)+' --flow '+str(opticalflow)+' --network '+str(network)+' '+finalguide+''
+    command = 'python dreamer.py --preview '+str(preview)+' --input '+str(inputdir)+' --output '+str(outputdir)+' --octaves '+str(octaves)+' --octavescale '+str(octavescale)+' --iterations '+str(itterations)+' --jitter '+str(jitter)+' --stepsize '+str(stepsize)+' --blend '+str(blend)+' --layers '+str(layers)+' --gpu '+str(gpu)+' --flow '+str(opticalflow)+' --network '+str(network)+' --drop '+str(drop)+' --keep '+str(keep)+' '+finalguide+''
+    
     newproc = subprocess.Popen("exec " + command, stdout=subprocess.PIPE, shell=True)
     newProcEntry = [newproc,author]
     procArray.append(newProcEntry)
