@@ -11,7 +11,7 @@ import errno
 import subprocess
 
 def main(content, style, output, imagesize, gpu, numiterations, saveiter, contentweight, styleweight):
-
+    print "main"
     if imagesize is None:
         imagesize = 512
     if gpu is None:
@@ -24,12 +24,20 @@ def main(content, style, output, imagesize, gpu, numiterations, saveiter, conten
         contentweight = 0.1
     if styleweight is None:
         styleweight = 1.0
-
-    command = 'qlua /home/roelof/neural-style-jcjohnson/neural_style.lua -style_image '+str(style)+' -content_image '+str(content)+' -output_image '+str(output)+' -proto_file /home/roelof/neural-style-jcjohnson/models/VGG_ILSVRC_19_layers_deploy.prototxt -model_file /home/roelof/neural-style-jcjohnson/models/VGG_ILSVRC_19_layers.caffemodel -image_size '+str(imagesize)+' -gpu '+str(gpu)+' -num_iterations '+str(numiterations)+' -save_iter '+str(saveiter)+' -content_weight '+str(contentweight)+' -style_weight '+str(styleweight)
-    print command
-    writeToLog("starting "+str(command))
-    subprocess.call(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
-    writeToLog("Stylenet Done")
+    
+    vidinput = os.listdir(content)
+    vids = []
+    print vidinput
+    for frame in vidinput:
+        if not ".png" in frame and not ".jpg" in frame: continue
+        vids.append(frame)
+     
+    for img in sorted(vids):
+        command = 'qlua /home/roelof/neural-style-jcjohnson/neural_style.lua -style_image '+str(style)+' -content_image '+str(content)+'/'+str(img)+' -output_image '+str(output)+'/'+str(img)+' -proto_file /home/roelof/neural-style-jcjohnson/models/VGG_ILSVRC_19_layers_deploy.prototxt -model_file /home/roelof/neural-style-jcjohnson/models/VGG_ILSVRC_19_layers.caffemodel -image_size '+str(imagesize)+' -gpu '+str(gpu)+' -num_iterations '+str(numiterations)+' -save_iter '+str(saveiter)+' -content_weight '+str(contentweight)+' -style_weight '+str(styleweight)
+        print command
+        writeToLog("starting "+str(command))
+        subprocess.call(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+        writeToLog("Stylenet Done")
 
 
 def writeToLog(msg):

@@ -78,19 +78,30 @@ def api_render():
     author = request.json['author']
     drop = request.json['sudroptop']
     keep = request.json['sukeep']
+    algorithm = request.json['algorithm']
     renderstop(author)
 
     finalguide = ''
     if len(guide) != 0:
         finalguide = '--guide ' + str(guide)
-
-    preview = 96
-    if presets == 'low': preview = 20
-    elif presets == 'medium': preview = 50
-
-    print "DeepDream Start"
-    command = 'python dreamer.py --preview '+str(preview)+' --input '+str(inputdir)+' --output '+str(outputdir)+' --octaves '+str(octaves)+' --octavescale '+str(octavescale)+' --iterations '+str(itterations)+' --jitter '+str(jitter)+' --stepsize '+str(stepsize)+' --blend '+str(blend)+' --layers '+str(layers)+' --gpu '+str(gpu)+' --flow '+str(opticalflow)+' --network '+str(network)+' --drop '+str(drop)+' --keep '+str(keep)+' '+finalguide+''
     
+    if True: #'deepdream' in algorithm:
+        preview = 96
+        if presets == 'low': preview = 20
+        elif presets == 'medium': preview = 50
+
+        print "DeepDream Start"
+        command = 'python dreamer.py --preview '+str(preview)+' --input '+str(inputdir)+' --output '+str(outputdir)+' --octaves '+str(octaves)+' --octavescale '+str(octavescale)+' --iterations '+str(itterations)+' --jitter '+str(jitter)+' --stepsize '+str(stepsize)+' --blend '+str(blend)+' --layers '+str(layers)+' --gpu '+str(gpu)+' --flow '+str(opticalflow)+' --network '+str(network)+' --drop '+str(drop)+' --keep '+str(keep)+' '+finalguide+''
+    else: #stylenet
+        print "Stylenet Start"
+        gpu -= 1
+        imagesize = 900
+        numiterations = itterations
+        saveiter = itterations
+        contentweight = 0.1
+        styleweight = 1.0
+        command = 'python stylenet.py --content '+str(inputdir)+' --style '+str(guide)+' --output '+str(outputdir)+' --imagesize '+str(imagesize)+' --gpu '+str(gpu)+' --numiterations '+str(numiterations)+' --saveiter '+str(saveiter)+' --contentweight '+str(contentweight)+' --styleweight '+str(styleweight)+''
+    print command 
     newproc = subprocess.Popen("exec " + command, stdout=subprocess.PIPE, shell=True)
     newProcEntry = [newproc,author]
     procArray.append(newProcEntry)
@@ -117,7 +128,7 @@ def api_renderstop():
 # Start stylenet renderer
 @app.route('/api/v1.0/getstyle', methods=['POST'])
 def api_style():
-    global newproc2
+    global procArrayStyle
 
     content = request.json['content'] 
     style = request.json['style'] 
@@ -131,17 +142,29 @@ def api_style():
 
     print "StyleNet Start"
     command = 'python stylenet.py --content '+str(preview)+' --style '+str(style)+' --output '+str(output)+' --imagesize '+str(imagesize)+' --gpu '+str(gpu)+' --numiterations '+str(numiterations)+' --saveiter '+str(saveiter)+' --contentweight '+str(contentweight)+' --styleweight '+str(styleweight)+''
-    newproc2 = subprocess.Popen("exec " + command, stdout=subprocess.PIPE, shell=True)
+    newproc = subprocess.Popen("exec " + command, stdout=subprocess.PIPE, shell=True)
+    newProcEntry = [newproc,author]
+    procArray.append(newProcEntry)
+    print procArrayStyle
     return 'running'
+
+def stylestop(author):
+    global procArrayStyle
+
+    for proc in procArrayStyle:
+        if(proc[1] == author):
+            proc[0].kill()
+            proc[0].terminate();
+            procArrayStyle.remove(proc)
+            print "StyleNet KILL"
+    print procArrayStyle
 
 # Stop stylenet renderer
 @app.route('/api/v1.0/stopstyle', methods=['POST'])
 def api_stylestop():
-    print "StyleNet KILL"
-    newproc2.kill()
-    newproc2.terminate();
+    stylestop(request.json['author'])
     return 'killed'
-    
+ 
 # Show console
 @app.route('/api/v1.0/getconsole', methods=['POST'])
 def api_console():

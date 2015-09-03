@@ -6,6 +6,7 @@
 // main param Json
 var params_view = { 
   params: {
+    algorithm:["DeepDream","StyleNet"],
   	jobname:"",
     presets: ["full", "medium","low"],
     network: ["googlelenet", "placesnet"],
@@ -29,7 +30,7 @@ var params_view = {
 };
 var selectedFiles = [];
 var maxImageView = 1;
-var maxImageView2 = 80;
+var maxImageView2 = 200;
 var username;
 var settings_ftp_username;
 var settings_ftp_server;
@@ -335,11 +336,19 @@ function get_console_poll(id,keyword,inputtype) {
 }
 
 function load_job(jobId){
-  // console.log("load_job: " + jobId);
+
+  var timestamp = new Date().getTime();
+  jobId = jobId + '?' + timestamp;
+
+
+  console.log("load_job: " + jobId);
   $.getJSON( jobId, function( data ) {
     params_view.params = data;
     get_directory(params_view.params.input,"input",0,0);
     get_directory(params_view.params.output,"output",0,0); 
+
+    console.log(data);
+    $("#params_algorithm option").filter(function() { return $(this).text() == params_view.params.algorithm; }).prop('selected', true);
 
     $("#job_title").html(params_view.params.jobname + " by " + params_view.params.author);
     $("#params_network option").filter(function() { return $(this).text() == params_view.params.network; }).prop('selected', true);
@@ -354,6 +363,8 @@ function load_job(jobId){
     $("#params_opticalflow option").filter(function() { return $(this).text() == params_view.params.opticalflow; }).prop('selected', true);
     $("#params_guide").val(params_view.params.guide);
     $("#params_gpu option").filter(function() { return $(this).text() == params_view.params.gpu; }).prop('selected', true);
+    $("#params_su_keep option").filter(function() { return $(this).text() == params_view.params.sukeep; }).prop('selected', true);
+    $("#params_su_droptop option").filter(function() { return $(this).text() == params_view.params.sudroptop; }).prop('selected', true);
 
     $( "#tab_home" ).trigger( "click" );
   });
@@ -435,7 +446,32 @@ function get_render() {
   });
 }
 
-function setupForm(){      
+function setupForm(){  
+
+  // presets
+  $("#params_algorithm").empty();
+  for(var i = 0; i < params_view.params.algorithm.length; i++) {
+    $("#params_algorithm").append('<option value="'+params_view.params.algorithm[i]+'">'+params_view.params.algorithm[i]+'</option>')
+  }
+  params_view.params.algorithm = params_view.params.algorithm[0];
+  $('#params_algorithm').on('change', function() { 
+    
+    if(this.value == "DeepDream"){
+      console.log("Deepdream");
+      $(".deepdream_param").show();
+      // $(".stylenet_params").hide();
+    }
+    else if(this.value == "StyleNet"){
+      console.log("Stylenet");
+      $(".deepdream_param").hide();
+      // $(".stylenet_params").show();
+    }
+
+
+    params_view.params.algorithm = this.value;
+  });
+
+
   // presets
   $("#params_presets").empty();
   for(var i = 0; i < params_view.params.presets.length; i++) {
@@ -662,7 +698,11 @@ $(function(){
     params_view.params.author = username;
     params_view.params.network = $('#params_network').find(":selected").text();
     params_view.params.presets = $('#params_presets').find(":selected").text();
-    
+    params_view.params.algorithm = $('#params_algorithm').find(":selected").text();
+  
+    params_view.params.sukeep = $('#params_su_keep').find(":selected").val();
+    params_view.params.sudroptop = $('#params_su_droptop').find(":selected").val();
+   
     get_render();
 
     $.ajax({
@@ -719,6 +759,7 @@ $(function(){
       params_view.params.author = username;
       params_view.params.network = $('#params_network').find(":selected").text();
       params_view.params.presets = $('#params_presets').find(":selected").text();
+      params_view.params.algorithm = $('#params_algorithm').find(":selected").text();
 
     	$.ajax({
 	        type: "POST",

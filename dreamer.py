@@ -320,7 +320,7 @@ def main(inputdir, outputdir, preview, octaves, octave_scale, iterations, jitter
         ret += '\n'
         writeToLog(ret)
 
-    if flow is 1:
+    if flow > 0:
         import cv2
 
         # optical flow
@@ -369,8 +369,12 @@ def main(inputdir, outputdir, preview, octaves, octave_scale, iterations, jitter
                 np.clip(hallu, 0, 255, out=hallu)
                 
                 #if not blend == 0:
-                #    hallu = morphPicture(PIL.Image.fromarray(np.uint8(previoushallu)), PIL.Image.fromarray(np.uint8(hallu)), blend, preview)
- 
+                #    #print np.uint8(previoushallu).shape
+                #    #print np.uint8(previousImg).shape
+     
+                #    #hallu = PIL.Image.blend(PIL.Image.fromarray(np.uint8(previoushallu)-np.uint8(previousImg)), PIL.Image.fromarray(np.uint8(hallu)-np.uint8(img)), blend)
+                #    #hallu = morphPicture(PIL.Image.fromarray(np.uint8(previoushallu-previousImg)), PIL.Image.fromarray(np.uint8(hallu-img)), blend, preview) + img
+                #else:
                 PIL.Image.fromarray(np.uint8(hallu)).save(saveframe,quality=jpg_quality)
                 writeToLog( 'channels used:: ' + str(keepIndices) + '\n') 
                 var_counter += 1

@@ -234,6 +234,15 @@
                   </button>
                   
                 <br/><br/>
+                <label class="control-label col-sm-3" for="inputSuccess3">Algorithm</label>
+
+                <div class="col-sm-9">
+                  <select class="form-control input-sm" id="params_algorithm">
+                    <option value="deepdream" selected>DeepDream</option>
+                    <option value="stylenet">StyleNet</option>
+                  </select>
+                </div>
+
 
                 <label class="control-label col-sm-3" for="inputSuccess3">Quality</label>
 
@@ -245,48 +254,50 @@
                   </select>
                 </div>
 
-                <label class="control-label col-sm-3" for="inputSuccess3">Network</label>
-                <div class="col-sm-9">
-                  <select class="form-control input-sm" id="params_network"></select>
-                </div>
+                <span class="deepdream_param">
+                  <label class="control-label col-sm-3" for="inputSuccess3">Network</label>
+                  <div class="col-sm-9">
+                    <select class="form-control input-sm" id="params_network"></select>
+                  </div>
               
-                <label class="control-label col-sm-3" for="inputSuccess3">Layers</label>
-                <div class="col-sm-9">
-                  <input type="text" class="form-control input-sm" placeholder="inception_4a/output" id="params_layers"/>
-                </div>
+                  <label class="control-label col-sm-3" for="inputSuccess3">Layers</label>
+                  <div class="col-sm-9">
+                    <input type="text" class="form-control input-sm" placeholder="inception_4a/output" id="params_layers"/>
+                  </div>
 
-                <label class="control-label col-sm-3" for="inputSuccess3">Octaves</label>
-                <div class="col-sm-9">
-                  <select class="form-control input-sm" id="params_octaves"></select>
-                </div>
-                <label class="control-label col-sm-3" for="inputSuccess3">Octavescale</label>
-                <div class="col-sm-9">
-                  <select class="form-control input-sm" id="params_octavescale"></select>
-                </div>
-                <label class="control-label col-sm-3" for="inputSuccess3">Iterations</label>
-                <div class="col-sm-9">
-                  <select class="form-control input-sm" id="params_iterations"></select>
-                </div>
+                  <label class="control-label col-sm-3" for="inputSuccess3">Octaves</label>
+                  <div class="col-sm-9">
+                    <select class="form-control input-sm" id="params_octaves"></select>
+                  </div>
+                  <label class="control-label col-sm-3" for="inputSuccess3">Octavescale</label>
+                  <div class="col-sm-9">
+                    <select class="form-control input-sm" id="params_octavescale"></select>
+                  </div>
+                  <label class="control-label col-sm-3" for="inputSuccess3">Iterations</label>
+                  <div class="col-sm-9">
+                    <select class="form-control input-sm" id="params_iterations"></select>
+                  </div>
 
-                <label class="control-label col-sm-3" for="inputSuccess3">Jitter</label>
-                <div class="col-sm-9">
-                  <select class="form-control input-sm" id="params_jitter"></select>
-                </div>
+                  <label class="control-label col-sm-3" for="inputSuccess3">Jitter</label>
+                  <div class="col-sm-9">
+                    <select class="form-control input-sm" id="params_jitter"></select>
+                  </div>
 
-                <label class="control-label col-sm-3" for="inputSuccess3">Stepsize</label>
-                <div class="col-sm-9">
-                  <select class="form-control input-sm" id="params_stepsize"></select>
-                </div>
+                  <label class="control-label col-sm-3" for="inputSuccess3">Stepsize</label>
+                  <div class="col-sm-9">
+                    <select class="form-control input-sm" id="params_stepsize"></select>
+                  </div>
 
-                <label class="control-label col-sm-3" for="inputSuccess3">Blend</label>
-                <div class="col-sm-9">
-                  <select class="form-control input-sm" id="params_blend"></select>
-                </div>
+                  <label class="control-label col-sm-3" for="inputSuccess3">Blend</label>
+                  <div class="col-sm-9">
+                    <select class="form-control input-sm" id="params_blend"></select>
+                  </div>
 
-                <label class="control-label col-sm-3" for="inputSuccess3">Opticalflow</label>
-                <div class="col-sm-9">
-                  <select class="form-control input-sm" id="params_opticalflow"></select>
-                </div>
+                  <label class="control-label col-sm-3" for="inputSuccess3">Opticalflow</label>
+                  <div class="col-sm-9">
+                    <select class="form-control input-sm" id="params_opticalflow"></select>
+                  </div>
+                </span>
 
                 <label class="control-label col-sm-3" for="inputSuccess3">Guide</label>
                 <div class="col-sm-9">
@@ -299,15 +310,17 @@
                   <select class="form-control input-sm" id="params_gpu"></select>
                 </div>
 
-                <label class="control-label col-sm-3" for="inputSuccess3">SU-Keep</label>
-                <div class="col-sm-9">
-                  <select class="form-control input-sm" id="params_su_keep"></select>
-                </div>
+                <span class="deepdream_param">
+                  <label class="control-label col-sm-3" for="inputSuccess3">SU-Keep</label>
+                  <div class="col-sm-9">
+                    <select class="form-control input-sm" id="params_su_keep"></select>
+                  </div>
 
-                <label class="control-label col-sm-3" for="inputSuccess3">SU-Drop</label>
-                <div class="col-sm-9">
-                  <select class="form-control input-sm" id="params_su_droptop"></select>
-                </div>
+                  <label class="control-label col-sm-3" for="inputSuccess3">SU-Drop</label>
+                  <div class="col-sm-9">
+                    <select class="form-control input-sm" id="params_su_droptop"></select>
+                  </div>
+                </span>
 
               </div>
             </div>
