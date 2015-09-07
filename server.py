@@ -91,7 +91,7 @@ def api_render():
         elif presets == 'medium': preview = 50
 
         print "DeepDream Start"
-        command = 'python dreamer.py --preview '+str(preview)+' --input '+str(inputdir)+' --output '+str(outputdir)+' --octaves '+str(octaves)+' --octavescale '+str(octavescale)+' --iterations '+str(itterations)+' --jitter '+str(jitter)+' --stepsize '+str(stepsize)+' --blend '+str(blend)+' --layers '+str(layers)+' --gpu '+str(gpu)+' --flow '+str(opticalflow)+' --network '+str(network)+' --drop '+str(drop)+' --keep '+str(keep)+' '+finalguide+''
+        command = 'python dreamer.py --preview '+str(preview)+' --input "'+str(inputdir)+'" --output "'+str(outputdir)+'" --octaves '+str(octaves)+' --octavescale '+str(octavescale)+' --iterations '+str(itterations)+' --jitter '+str(jitter)+' --stepsize '+str(stepsize)+' --blend '+str(blend)+' --layers '+str(layers)+' --gpu '+str(gpu)+' --flow '+str(opticalflow)+' --network '+str(network)+' --drop '+str(drop)+' --keep '+str(keep)+' '+finalguide+''
     else: #stylenet
         print "Stylenet Start"
         gpu -= 1
@@ -100,7 +100,7 @@ def api_render():
         saveiter = itterations
         contentweight = 0.1
         styleweight = 1.0
-        command = 'python stylenet.py --content '+str(inputdir)+' --style '+str(guide)+' --output '+str(outputdir)+' --imagesize '+str(imagesize)+' --gpu '+str(gpu)+' --numiterations '+str(numiterations)+' --saveiter '+str(saveiter)+' --contentweight '+str(contentweight)+' --styleweight '+str(styleweight)+''
+        command = 'python stylenet.py --content "'+str(inputdir)+'" --style "'+str(guide)+'" --output "'+str(outputdir)+'" --imagesize '+str(imagesize)+' --gpu '+str(gpu)+' --numiterations '+str(numiterations)+' --saveiter '+str(saveiter)+' --contentweight '+str(contentweight)+' --styleweight '+str(styleweight)+''
     print command 
     newproc = subprocess.Popen("exec " + command, stdout=subprocess.PIPE, shell=True)
     newProcEntry = [newproc,author]
